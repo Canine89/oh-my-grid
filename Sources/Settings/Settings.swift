@@ -1,0 +1,57 @@
+import Foundation
+
+/// UserDefaults 기반 환경설정.
+final class Settings {
+    static let shared = Settings()
+    private let defaults = UserDefaults.standard
+    private init() {}
+
+    private enum Keys {
+        static let columns = "gridColumns"
+        static let rows = "gridRows"
+        static let enabled = "gridEnabled"
+        static let outerMargin = "outerMargin"
+        static let innerGap = "innerGap"
+    }
+
+    /// 그리드 열 수. 기본 6.
+    var columns: Int {
+        get {
+            let v = defaults.object(forKey: Keys.columns) as? Int ?? 6
+            return max(1, min(24, v))
+        }
+        set { defaults.set(max(1, min(24, newValue)), forKey: Keys.columns) }
+    }
+
+    /// 그리드 행 수. 기본 4.
+    var rows: Int {
+        get {
+            let v = defaults.object(forKey: Keys.rows) as? Int ?? 4
+            return max(1, min(24, v))
+        }
+        set { defaults.set(max(1, min(24, newValue)), forKey: Keys.rows) }
+    }
+
+    /// 제스처 활성 여부. 기본 true.
+    var enabled: Bool {
+        get { defaults.object(forKey: Keys.enabled) == nil ? true : defaults.bool(forKey: Keys.enabled) }
+        set { defaults.set(newValue, forKey: Keys.enabled) }
+    }
+
+    /// 화면 가장자리 바깥 여백(px). 스냅된 창과 화면 가장자리 사이 간격. 기본 0.
+    var outerMargin: CGFloat {
+        get { CGFloat(defaults.double(forKey: Keys.outerMargin)) }
+        set { defaults.set(Double(newValue), forKey: Keys.outerMargin) }
+    }
+
+    /// 셀 블록 안쪽 여백(px). 창과 셀 경계 사이 간격. 기본 0.
+    var innerGap: CGFloat {
+        get { CGFloat(defaults.double(forKey: Keys.innerGap)) }
+        set { defaults.set(Double(newValue), forKey: Keys.innerGap) }
+    }
+}
+
+extension Notification.Name {
+    /// 그리드 설정(열/행/활성)이 바뀌었을 때.
+    static let gridSettingsChanged = Notification.Name("com.goldenrabbit.ohmygrid.settingsChanged")
+}
