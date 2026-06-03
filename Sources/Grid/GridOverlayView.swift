@@ -28,20 +28,25 @@ final class GridOverlayView: NSView {
         bounds.fill()
 
         // 그리드 선 (미리보기 모드에서는 생략 — 단일 하이라이트만 보여줌).
+        // 메뉴바/Dock을 제외한 사용 영역(displayBounds)에만 그린다 → 뷰 전체(bounds)가 아님.
         if !previewOnly {
-            let cellW = bounds.width / CGFloat(columns)
-            let cellH = bounds.height / CGFloat(rows)
+            let gridLocal = CGRect(x: displayBounds.minX - cgOrigin.x,
+                                   y: displayBounds.minY - cgOrigin.y,
+                                   width: displayBounds.width,
+                                   height: displayBounds.height)
+            let cellW = gridLocal.width / CGFloat(columns)
+            let cellH = gridLocal.height / CGFloat(rows)
             let linePath = NSBezierPath()
             linePath.lineWidth = 1
             for c in 0...columns {
-                let x = CGFloat(c) * cellW
-                linePath.move(to: CGPoint(x: x, y: 0))
-                linePath.line(to: CGPoint(x: x, y: bounds.height))
+                let x = gridLocal.minX + CGFloat(c) * cellW
+                linePath.move(to: CGPoint(x: x, y: gridLocal.minY))
+                linePath.line(to: CGPoint(x: x, y: gridLocal.maxY))
             }
             for r in 0...rows {
-                let y = CGFloat(r) * cellH
-                linePath.move(to: CGPoint(x: 0, y: y))
-                linePath.line(to: CGPoint(x: bounds.width, y: y))
+                let y = gridLocal.minY + CGFloat(r) * cellH
+                linePath.move(to: CGPoint(x: gridLocal.minX, y: y))
+                linePath.line(to: CGPoint(x: gridLocal.maxX, y: y))
             }
             Brand.gridLine.setStroke()
             linePath.stroke()

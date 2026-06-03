@@ -67,7 +67,8 @@ final class GridSessionController {
         clearEdgeDrag()
 
         targetWindow = window
-        displayBounds = display.bounds
+        // 셀 계산은 메뉴바/Dock을 제외한 사용 영역 기준 → 스냅 창이 Dock·상단바와 안 겹침.
+        displayBounds = ScreenGeometry.cgVisibleBounds(for: screen)
         pendingWindow = nil
         pendingFrame = nil
 
@@ -77,7 +78,9 @@ final class GridSessionController {
         current = anchor
 
         let win = GridOverlayWindow(screen: screen)
-        win.gridView.cgOrigin = displayBounds.origin
+        // 오버레이 뷰는 화면 전체(screen.frame)를 덮으므로 매핑 원점은 디스플레이 전체 원점,
+        // 그리드는 displayBounds(사용 영역) 안에만 그려진다.
+        win.gridView.cgOrigin = display.bounds.origin
         win.gridView.displayBounds = displayBounds
         win.gridView.columns = cols
         win.gridView.rows = rows
