@@ -6,6 +6,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
 
     private let enabledCheck = NSButton(checkboxWithTitle: "그리드 제스처 활성화", target: nil, action: nil)
+    private let edgeSnapCheck = NSButton(checkboxWithTitle: "가장자리 절반 스냅 (창을 화면 끝으로 드래그)", target: nil, action: nil)
     private let colsField = NSTextField()
     private let colsStepper = NSStepper()
     private let rowsField = NSTextField()
@@ -21,7 +22,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
     }
 
     private func build() {
-        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 280),
+        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 320),
                            styleMask: [.titled, .closable],
                            backing: .buffered, defer: false)
         win.title = "\(Brand.name) 설정"
@@ -39,6 +40,11 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
         enabledCheck.target = self
         enabledCheck.action = #selector(toggleEnabled)
         stack.addArrangedSubview(enabledCheck)
+
+        // 가장자리 절반 스냅 토글
+        edgeSnapCheck.target = self
+        edgeSnapCheck.action = #selector(toggleEdgeSnap)
+        stack.addArrangedSubview(edgeSnapCheck)
 
         // 열
         stack.addArrangedSubview(makeStepperRow(title: "열 (가로 칸 수)",
@@ -63,7 +69,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
         stack.addArrangedSubview(permBtn)
 
         let hint = NSTextField(wrappingLabelWithString:
-            "사용법: 창을 드래그하는 도중 오른쪽 버튼을 한 번 클릭하면 그리드가 켜집니다. 그대로 셀을 가로질러 움직인 뒤 왼쪽 버튼을 놓으면 창이 스냅됩니다. (다시 우클릭하거나 Esc로 취소)")
+            "사용법: 창을 드래그하는 도중 오른쪽 버튼을 한 번 클릭하면 그리드가 켜집니다. 그대로 셀을 가로질러 움직인 뒤 왼쪽 버튼을 놓으면 창이 스냅됩니다. (다시 우클릭하거나 Esc로 취소)\n가장자리 스냅: 창을 화면 좌·우·아래 끝으로 끌면 절반, 위 끝으로 끌면 최대화됩니다.")
         hint.font = .systemFont(ofSize: 11)
         hint.textColor = .tertiaryLabelColor
         hint.preferredMaxLayoutWidth = 340
@@ -108,6 +114,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
 
     private func refresh() {
         enabledCheck.state = Settings.shared.enabled ? .on : .off
+        edgeSnapCheck.state = Settings.shared.edgeSnapEnabled ? .on : .off
         colsField.integerValue = Settings.shared.columns
         colsStepper.integerValue = Settings.shared.columns
         rowsField.integerValue = Settings.shared.rows
@@ -121,6 +128,11 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
 
     @objc private func toggleEnabled() {
         Settings.shared.enabled = (enabledCheck.state == .on)
+        notifyChanged()
+    }
+
+    @objc private func toggleEdgeSnap() {
+        Settings.shared.edgeSnapEnabled = (edgeSnapCheck.state == .on)
         notifyChanged()
     }
 

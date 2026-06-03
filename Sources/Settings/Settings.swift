@@ -10,6 +10,7 @@ final class Settings {
         static let columns = "gridColumns"
         static let rows = "gridRows"
         static let enabled = "gridEnabled"
+        static let edgeSnap = "edgeSnapEnabled"
         static let outerMargin = "outerMargin"
         static let innerGap = "innerGap"
     }
@@ -36,6 +37,12 @@ final class Settings {
     var enabled: Bool {
         get { defaults.object(forKey: Keys.enabled) == nil ? true : defaults.bool(forKey: Keys.enabled) }
         set { defaults.set(newValue, forKey: Keys.enabled) }
+    }
+
+    /// 가장자리 절반 스냅(일반 드래그로 화면 끝에 대면 절반/최대화) 활성 여부. 기본 true.
+    var edgeSnapEnabled: Bool {
+        get { defaults.object(forKey: Keys.edgeSnap) == nil ? true : defaults.bool(forKey: Keys.edgeSnap) }
+        set { defaults.set(newValue, forKey: Keys.edgeSnap) }
     }
 
     /// 화면 가장자리 바깥 여백(px). 스냅된 창과 화면 가장자리 사이 간격. 기본 0.

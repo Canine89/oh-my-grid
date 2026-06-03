@@ -13,6 +13,10 @@ final class GridOverlayView: NSView {
     var selection: CGRect? {
         didSet { needsDisplay = true }
     }
+    /// true이면 그리드 선을 그리지 않고 `selection` 하이라이트만 표시(가장자리 스냅 미리보기용).
+    var previewOnly = false {
+        didSet { needsDisplay = true }
+    }
 
     override var isFlipped: Bool { true }
 
@@ -23,24 +27,25 @@ final class GridOverlayView: NSView {
         NSColor(white: 0, alpha: 0.12).setFill()
         bounds.fill()
 
-        let cellW = bounds.width / CGFloat(columns)
-        let cellH = bounds.height / CGFloat(rows)
-
-        // 그리드 선.
-        let linePath = NSBezierPath()
-        linePath.lineWidth = 1
-        for c in 0...columns {
-            let x = CGFloat(c) * cellW
-            linePath.move(to: CGPoint(x: x, y: 0))
-            linePath.line(to: CGPoint(x: x, y: bounds.height))
+        // 그리드 선 (미리보기 모드에서는 생략 — 단일 하이라이트만 보여줌).
+        if !previewOnly {
+            let cellW = bounds.width / CGFloat(columns)
+            let cellH = bounds.height / CGFloat(rows)
+            let linePath = NSBezierPath()
+            linePath.lineWidth = 1
+            for c in 0...columns {
+                let x = CGFloat(c) * cellW
+                linePath.move(to: CGPoint(x: x, y: 0))
+                linePath.line(to: CGPoint(x: x, y: bounds.height))
+            }
+            for r in 0...rows {
+                let y = CGFloat(r) * cellH
+                linePath.move(to: CGPoint(x: 0, y: y))
+                linePath.line(to: CGPoint(x: bounds.width, y: y))
+            }
+            Brand.gridLine.setStroke()
+            linePath.stroke()
         }
-        for r in 0...rows {
-            let y = CGFloat(r) * cellH
-            linePath.move(to: CGPoint(x: 0, y: y))
-            linePath.line(to: CGPoint(x: bounds.width, y: y))
-        }
-        Brand.gridLine.setStroke()
-        linePath.stroke()
 
         // 선택 블록 하이라이트.
         if let sel = selection {

@@ -13,6 +13,11 @@ enum ScreenGeometry {
         var row: Int
     }
 
+    /// 화면 가장자리 스냅 존. (코너 1/4 없음 — 위쪽은 최대화)
+    enum EdgeZone: Equatable {
+        case left, right, top, bottom
+    }
+
     /// `CGDirectDisplayID`에 해당하는 NSScreen.
     static func screen(for displayID: CGDirectDisplayID) -> NSScreen? {
         NSScreen.screens.first { $0.displayID == displayID }
@@ -51,6 +56,42 @@ enum ScreenGeometry {
                       y: bounds.minY + CGFloat(minRow) * cellH,
                       width: CGFloat(maxCol - minCol + 1) * cellW,
                       height: CGFloat(maxRow - minRow + 1) * cellH)
+    }
+
+    /// 메뉴바·Dock을 제외한 사용 영역을 CG 전역(top-left) 사각형으로 반환.
+    /// `NSScreen.visibleFrame`(AppKit bottom-left)을 CG 전역으로 변환한다 → 스냅 창이 메뉴바 밑으로 안 들어감.
+    static func cgVisibleBounds(for screen: NSScreen) -> CGRect {
+        let totalHeight = NSScreen.screens.map { CGDisplayBounds($0.displayID).maxY }.max() ?? screen.frame.maxY
+        let vf = screen.visibleFrame
+        // y 뒤집기: AppKit bottom-left → CG top-left.
+        return CGRect(x: vf.minX,
+                      y: totalHeight - vf.maxY,
+                      width: vf.width,
+                      height: vf.height)
+    }
+
+    /// CG 전역(top-left) 점이 디스플레이 가장자리 밴드(`threshold` 폭) 안에 있으면 해당 존을 반환.
+    /// 코너 중첩 시 위/아래(수평 가장자리)를 좌/우보다 먼저 매칭한다.
+    static func edgeZone(at point: CGPoint, bounds: CGRect, threshold: CGFloat) -> EdgeZone? {
+        if point.y <= bounds.minY + threshold { return .top }
+        if point.y >= bounds.maxY - threshold { return .bottom }
+        if point.x <= bounds.minX + threshold { return .left }
+        if point.x >= bounds.maxX - threshold { return .right }
+        return nil
+    }
+
+    /// 존에 해당하는 목표 사각형(CG 전역 top-left). `usable`은 메뉴바/Dock 제외 사용 영역.
+    static func rect(for zone: EdgeZone, usable: CGRect) -> CGRect {
+        switch zone {
+        case .left:
+            return CGRect(x: usable.minX, y: usable.minY, width: usable.width / 2, height: usable.height)
+        case .right:
+            return CGRect(x: usable.midX, y: usable.minY, width: usable.width / 2, height: usable.height)
+        case .bottom:
+            return CGRect(x: usable.minX, y: usable.midY, width: usable.width, height: usable.height / 2)
+        case .top:
+            return usable   // 최대화
+        }
     }
 
     /// CG 전역(top-left) 사각형 → AppKit 전역(bottom-left) 사각형. 오버레이 윈도우 배치용.

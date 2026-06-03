@@ -74,12 +74,15 @@ final class MouseEventTap {
 
         case .leftMouseDown:
             leftDown = true
+            // 일반 드래그 가장자리 스냅을 위해 후보 창을 캡처(엣지 스냅이 꺼져 있으면 내부에서 무시).
+            session.beginDrag(at: event.location)
             return pass
 
         case .leftMouseUp:
             leftDown = false
             // 드래그(좌버튼)가 끝나는 시점 = 창이 이미 커서 위치에 있는 시점.
-            // 여기서 확정 목표로 한 번 스냅한다(번쩍임 없음).
+            // 가장자리 스냅 목표가 있으면 먼저 확정한 뒤, 확정 목표로 한 번 스냅한다(번쩍임 없음).
+            session.endEdgeDrag()
             session.commitPending()
             return pass   // 좌클릭은 절대 소비하지 않는다.
 
@@ -108,7 +111,12 @@ final class MouseEventTap {
 
         case .leftMouseDragged:
             // 창은 OS 드래그로 커서를 그대로 따라가게 둔다(소비하지 않음) → 마지막 스냅이 매끄럽다.
-            if session.isArmed { session.update(to: event.location) }
+            if session.isArmed {
+                session.update(to: event.location)
+            } else {
+                // 그리드 비무장 시: 일반 드래그 가장자리 절반 스냅 미리보기 갱신.
+                session.updateEdgeDrag(to: event.location)
+            }
             return pass
 
         case .rightMouseDragged:

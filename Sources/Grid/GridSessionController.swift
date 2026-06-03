@@ -27,6 +27,23 @@ final class GridSessionController {
     private var watchdog: Timer?
     private let watchdogTimeout: TimeInterval = 15
 
+    // MARK: 가장자리 절반 스냅 (일반 드래그) 상태
+    /// 드래그 중인 후보 창(leftMouseDown 시점에 캡처).
+    private var dragCandidate: AXUIElement?
+    /// 후보 창의 초기 origin(CG 전역). 가장자리 진입 시 이동 여부 판별에 사용.
+    private var dragInitialOrigin: CGPoint?
+    /// 후보 창이 실제로 이동해 "창 드래그"로 확정되었는지(텍스트 선택/리사이즈 오작동 방지).
+    private var dragConfirmed = false
+    /// 미리보기가 떠 있는 존. nil이면 가장자리 밖.
+    private var currentZone: ScreenGeometry.EdgeZone?
+    /// 현재 존의 사용 영역(메뉴바/Dock 제외, CG 전역)과 디스플레이.
+    private var edgeUsable: CGRect = .zero
+    private var edgeScreen: NSScreen?
+    private var edgeDisplayBounds: CGRect = .zero
+    /// 가장자리 밴드 폭(px)과 창 드래그 확정 최소 이동거리(px).
+    private let edgeThreshold: CGFloat = 12
+    private let dragConfirmDistance: CGFloat = 8
+
     /// 좌드래그 도중 우클릭 시점에 호출. 성공 시 true(이벤트 탭이 우클릭을 소비).
     /// 창은 **이동시키지 않고** 그리드만 띄운다(드래그는 OS가 계속 처리 → 창은 커서를 따라감).
     @discardableResult
@@ -44,6 +61,10 @@ final class GridSessionController {
             return false
         }
         glog("arm 성공 display=\(display.id) bounds=\(rs(display.bounds))")
+
+        // 가장자리 미리보기가 떠 있었다면 정리(그리드와 상호 배타).
+        hideEdgePreview()
+        clearEdgeDrag()
 
         targetWindow = window
         displayBounds = display.bounds
@@ -117,10 +138,95 @@ final class GridSessionController {
     /// 취소 — 창 변경 없이 오버레이만 정리.
     func cancel() {
         teardownOverlay()
+        clearEdgeDrag()
         targetWindow = nil
         pendingWindow = nil
         pendingFrame = nil
         isArmed = false
+    }
+
+    // MARK: - 가장자리 절반 스냅
+
+    /// leftMouseDown 시 호출 — 후보 창과 초기 origin을 캡처해 드래그 추적을 시작한다.
+    /// 엣지 스냅이 꺼져 있거나 권한이 없으면 아무것도 하지 않는다.
+    func beginDrag(at point: CGPoint) {
+        clearEdgeDrag()
+        guard Settings.shared.edgeSnapEnabled, AccessibilityPermission.isGranted else { return }
+        guard let window = AXWindowController.shared.windowUnderCursor(cgPoint: point) else { return }
+        dragCandidate = window
+        dragInitialOrigin = AXWindowController.shared.frame(of: window)?.origin
+    }
+
+    /// leftMouseDragged(그리드 비무장 시) 호출 — 가장자리 존을 판정하고 미리보기를 갱신한다.
+    func updateEdgeDrag(to point: CGPoint) {
+        guard !isArmed, Settings.shared.edgeSnapEnabled, dragCandidate != nil else { return }
+        guard let display = ScreenGeometry.displayContaining(cgPoint: point),
+              let screen = ScreenGeometry.screen(for: display.id) else { return }
+
+        let zone = ScreenGeometry.edgeZone(at: point, bounds: display.bounds, threshold: edgeThreshold)
+        guard let zone else {
+            if currentZone != nil { hideEdgePreview() }
+            return
+        }
+
+        // 실제 창 드래그인지 확정(초기 origin 대비 이동). 아직이면 미리보기 보류.
+        if !dragConfirmed {
+            guard let initial = dragInitialOrigin,
+                  let now = AXWindowController.shared.frame(of: dragCandidate!)?.origin else { return }
+            if hypot(now.x - initial.x, now.y - initial.y) >= dragConfirmDistance {
+                dragConfirmed = true
+            } else {
+                return
+            }
+        }
+
+        edgeScreen = screen
+        edgeDisplayBounds = display.bounds
+        edgeUsable = ScreenGeometry.cgVisibleBounds(for: screen)
+        let target = applyGaps(ScreenGeometry.rect(for: zone, usable: edgeUsable), within: edgeUsable)
+        showEdgePreview(rect: target, screen: screen, displayBounds: display.bounds)
+        currentZone = zone
+    }
+
+    /// leftMouseUp 시 호출 — 확정된 존이 있으면 pending 목표로 설정한다(실제 스냅은 `commitPending`).
+    func endEdgeDrag() {
+        if dragConfirmed, let zone = currentZone, let window = dragCandidate {
+            pendingWindow = window
+            pendingFrame = applyGaps(ScreenGeometry.rect(for: zone, usable: edgeUsable), within: edgeUsable)
+            glog("엣지 스냅 목표 zone=\(zone) frame=\(rs(pendingFrame!))")
+            hideEdgePreview()
+        }
+        clearEdgeDrag()
+    }
+
+    private func showEdgePreview(rect: CGRect, screen: NSScreen, displayBounds: CGRect) {
+        // 디스플레이가 바뀌었으면(원점 불일치) 기존 오버레이를 버리고 새로 만든다.
+        if let win = overlay, win.gridView.cgOrigin != displayBounds.origin { teardownOverlay() }
+        if overlay == nil {
+            let win = GridOverlayWindow(screen: screen)
+            win.gridView.previewOnly = true
+            win.gridView.cgOrigin = displayBounds.origin
+            win.gridView.displayBounds = displayBounds
+            win.orderFrontRegardless()
+            overlay = win
+        }
+        overlay?.gridView.selection = rect
+    }
+
+    private func hideEdgePreview() {
+        teardownOverlay()
+        currentZone = nil
+    }
+
+    /// 엣지 드래그 추적 상태 초기화(미리보기 오버레이는 건드리지 않음 — 호출부에서 별도 정리).
+    private func clearEdgeDrag() {
+        dragCandidate = nil
+        dragInitialOrigin = nil
+        dragConfirmed = false
+        currentZone = nil
+        edgeScreen = nil
+        edgeUsable = .zero
+        edgeDisplayBounds = .zero
     }
 
     // MARK: - 내부
@@ -132,15 +238,20 @@ final class GridSessionController {
                                  rows: Settings.shared.rows)
     }
 
-    /// 바깥 여백/안쪽 간격 적용.
+    /// 바깥 여백/안쪽 간격 적용. (그리드 셀은 displayBounds 기준)
     private func applyGaps(_ rect: CGRect) -> CGRect {
+        applyGaps(rect, within: displayBounds)
+    }
+
+    /// `bounds`의 가장자리에 닿는 변에만 바깥 여백을, 모든 변에 안쪽 간격을 적용한다.
+    private func applyGaps(_ rect: CGRect, within bounds: CGRect) -> CGRect {
         var r = rect.insetBy(dx: Settings.shared.innerGap, dy: Settings.shared.innerGap)
         let m = Settings.shared.outerMargin
         if m > 0 {
-            if abs(rect.minX - displayBounds.minX) < 1 { r.origin.x += m; r.size.width -= m }
-            if abs(rect.maxX - displayBounds.maxX) < 1 { r.size.width -= m }
-            if abs(rect.minY - displayBounds.minY) < 1 { r.origin.y += m; r.size.height -= m }
-            if abs(rect.maxY - displayBounds.maxY) < 1 { r.size.height -= m }
+            if abs(rect.minX - bounds.minX) < 1 { r.origin.x += m; r.size.width -= m }
+            if abs(rect.maxX - bounds.maxX) < 1 { r.size.width -= m }
+            if abs(rect.minY - bounds.minY) < 1 { r.origin.y += m; r.size.height -= m }
+            if abs(rect.maxY - bounds.maxY) < 1 { r.size.height -= m }
         }
         return r.integral
     }
