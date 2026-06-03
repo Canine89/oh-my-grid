@@ -6,20 +6,17 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.0.0</title>
-      <pubDate>Wed, 03 Jun 2026 11:21:30 +0000</pubDate>
-      <sparkle:version>1</sparkle:version>
-      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <title>1.0.1</title>
+      <pubDate>Wed, 03 Jun 2026 11:32:22 +0000</pubDate>
+      <sparkle:version>2</sparkle:version>
+      <sparkle:shortVersionString>1.0.1</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.0.0</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.0.1</h2>
 <ul>
-<li>첫 릴리스 🎉</li>
-<li>창을 드래그하는 도중 우클릭하면 화면에 그리드 가이드 표시</li>
-<li>셀 블록을 끌어 놓으면 창이 해당 영역으로 스냅(이동·리사이즈)</li>
-<li>그리드 열·행 수 설정(기본 6×4)</li>
-<li>메뉴바 상주 · Sparkle 자동 업데이트</li>
+<li>동작 방식 변경: 오른쪽 버튼을 계속 누르지 않고, 드래그 도중 **오른쪽 클릭 한 번**으로 그리드를 켭니다</li>
+<li>왼쪽 버튼을 놓으면 스냅 완료 · 다시 오른쪽 클릭하거나 Esc로 취소</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.0.0/oh-my-grid-1.0.0.zip" type="application/octet-stream" sparkle:edSignature="jGV+JinYnaKbNg0JgDQENE4P/sQ08Gq5cm7ybB3fuvXiwlulLznszgGsJCksFoqNmHzjbfOY1deOot0ddDecCw==" length="1356122" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.0.1/oh-my-grid-1.0.1.zip" type="application/octet-stream" sparkle:edSignature="bxtzzKlQcFdXysWuQrBKYlUmx88pwsGuvCZWh/u6WWws9cUIUz9smmFNBz1gMrR6wQJuvG9fzcNNWRrSouTlBw==" length="1355819" />
     </item>
   </channel>
 </rss>
