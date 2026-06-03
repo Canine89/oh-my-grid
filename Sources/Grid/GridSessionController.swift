@@ -28,10 +28,16 @@ final class GridSessionController {
     private let watchdogTimeout: TimeInterval = 15
 
     // MARK: 가장자리 절반 스냅 (일반 드래그) 상태
-    /// 드래그 중인 후보 창(leftMouseDown 시점에 캡처).
+    /// 드래그 중인 후보 창. 비용이 큰 AX 조회를 클릭마다 하지 않으려고 **첫 드래그 시점에 비동기**로 캡처.
     private var dragCandidate: AXUIElement?
     /// 후보 창의 초기 origin(CG 전역). 가장자리 진입 시 이동 여부 판별에 사용.
     private var dragInitialOrigin: CGPoint?
+    /// 마우스 다운 지점(후보 창 조회 위치). 드래그가 시작될 때까지 AX는 건드리지 않는다.
+    private var dragStartPoint: CGPoint?
+    /// 이번 드래그에서 후보 창을 아직 캡처하지 않았으면 true(첫 드래그 이벤트에서 1회 캡처).
+    private var needsCandidate = false
+    /// 비동기 캡처 무효화 토큰(클릭이 빠르게 반복되거나 취소될 때 stale 결과 방지).
+    private var dragToken = 0
     /// 후보 창이 실제로 이동해 "창 드래그"로 확정되었는지(텍스트 선택/리사이즈 오작동 방지).
     private var dragConfirmed = false
     /// 미리보기가 떠 있는 존. nil이면 가장자리 밖.
@@ -150,19 +156,41 @@ final class GridSessionController {
 
     // MARK: - 가장자리 절반 스냅
 
-    /// leftMouseDown 시 호출 — 후보 창과 초기 origin을 캡처해 드래그 추적을 시작한다.
-    /// 엣지 스냅이 꺼져 있거나 권한이 없으면 아무것도 하지 않는다.
+    /// leftMouseDown 시 호출 — 다운 지점만 기록한다(AX 조회 없음 → 클릭 전달 지연 없음).
+    /// 실제 후보 창 조회는 첫 드래그 이벤트에서 비동기로 1회만 한다(순수 클릭은 AX를 전혀 안 함).
     func beginDrag(at point: CGPoint) {
         clearEdgeDrag()
         guard Settings.shared.edgeSnapEnabled, AccessibilityPermission.isGranted else { return }
-        guard let window = AXWindowController.shared.windowUnderCursor(cgPoint: point) else { return }
-        dragCandidate = window
-        dragInitialOrigin = AXWindowController.shared.frame(of: window)?.origin
+        dragStartPoint = point
+        needsCandidate = true
+    }
+
+    /// 첫 드래그 이벤트에서 후보 창/초기 origin을 **비동기로** 캡처한다.
+    /// 이벤트 탭 콜백을 막지 않도록 main 큐로 넘긴다 → 다른 앱 입력이 지연되지 않는다.
+    private func captureCandidateAsync() {
+        guard let start = dragStartPoint else { return }
+        dragToken &+= 1
+        let token = dragToken
+        DispatchQueue.main.async { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self, self.dragToken == token else { return }
+                guard let window = AXWindowController.shared.windowUnderCursor(cgPoint: start) else { return }
+                guard self.dragToken == token else { return }   // 캡처 도중 취소/재시작 방지
+                self.dragCandidate = window
+                self.dragInitialOrigin = AXWindowController.shared.frame(of: window)?.origin
+            }
+        }
     }
 
     /// leftMouseDragged(그리드 비무장 시) 호출 — 가장자리 존을 판정하고 미리보기를 갱신한다.
     func updateEdgeDrag(to point: CGPoint) {
-        guard !isArmed, Settings.shared.edgeSnapEnabled, dragCandidate != nil else { return }
+        guard !isArmed, Settings.shared.edgeSnapEnabled else { return }
+        // 첫 드래그에서만 후보 창을 비동기 캡처(순수 클릭이었다면 여기 도달 안 함 → AX 없음).
+        if needsCandidate {
+            needsCandidate = false
+            captureCandidateAsync()
+        }
+        guard dragCandidate != nil else { return }   // 비동기 캡처 완료 전이면 다음 이벤트에서 처리
         guard let display = ScreenGeometry.displayContaining(cgPoint: point),
               let screen = ScreenGeometry.screen(for: display.id) else { return }
 
@@ -223,8 +251,11 @@ final class GridSessionController {
 
     /// 엣지 드래그 추적 상태 초기화(미리보기 오버레이는 건드리지 않음 — 호출부에서 별도 정리).
     private func clearEdgeDrag() {
+        dragToken &+= 1            // 진행 중인 비동기 캡처 무효화
         dragCandidate = nil
         dragInitialOrigin = nil
+        dragStartPoint = nil
+        needsCandidate = false
         dragConfirmed = false
         currentZone = nil
         edgeScreen = nil
