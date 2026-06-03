@@ -6,18 +6,16 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.1.0</title>
-      <pubDate>Wed, 03 Jun 2026 14:11:39 +0000</pubDate>
-      <sparkle:version>4</sparkle:version>
-      <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+      <title>1.1.1</title>
+      <pubDate>Wed, 03 Jun 2026 14:30:56 +0000</pubDate>
+      <sparkle:version>5</sparkle:version>
+      <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.1.0</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.1.1</h2>
 <ul>
-<li>가장자리 절반 스냅 추가: 창을 그냥 끌어서 화면 **좌·우·아래** 끝에 대면 절반, **위** 끝에 대면 최대화</li>
-<li>텍스트 선택·리사이즈와 구분(창이 실제로 이동할 때만 발동) · 메뉴바/Dock 영역은 침범하지 않음</li>
-<li>설정에서 "가장자리 절반 스냅" 켜기/끄기 가능 (기본 켜짐)</li>
+<li>그리드 스냅이 Dock·상단 메뉴바 영역을 침범하던 문제 수정 (사용 영역 기준으로 셀 계산)</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.1.0/oh-my-grid-1.1.0.zip" type="application/octet-stream" sparkle:edSignature="RNtjAkbfc/s09wGvNbcHLgjykJ8UpLMdZ0ff2DyPEE2CR+ck3NnqqjTpeGTXu9SPVm2GUK5cAP55+2TzJjZZCA==" length="3288614" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.1.1/oh-my-grid-1.1.1.zip" type="application/octet-stream" sparkle:edSignature="PrkUQSzVDvxg3Tr3FI13dlDv37EIzen/KzvO/JwPra87LGCt28DvPbwrTkv+JXQUcVeM3v/pZEFxHGkVg31cCA==" length="3288726" />
     </item>
   </channel>
 </rss>
