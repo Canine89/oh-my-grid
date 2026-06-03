@@ -6,16 +6,16 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.1.1</title>
-      <pubDate>Wed, 03 Jun 2026 14:30:56 +0000</pubDate>
-      <sparkle:version>5</sparkle:version>
-      <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
+      <title>1.1.2</title>
+      <pubDate>Wed, 03 Jun 2026 15:16:21 +0000</pubDate>
+      <sparkle:version>6</sparkle:version>
+      <sparkle:shortVersionString>1.1.2</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.1.1</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.1.2</h2>
 <ul>
-<li>그리드 스냅이 Dock·상단 메뉴바 영역을 침범하던 문제 수정 (사용 영역 기준으로 셀 계산)</li>
+<li>드래그 감지 때문에 다른 앱 클릭/입력이 지연되던 문제 수정 (창 조회를 첫 드래그 시점에 비동기로 처리, 순수 클릭에는 영향 없음)</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.1.1/oh-my-grid-1.1.1.zip" type="application/octet-stream" sparkle:edSignature="PrkUQSzVDvxg3Tr3FI13dlDv37EIzen/KzvO/JwPra87LGCt28DvPbwrTkv+JXQUcVeM3v/pZEFxHGkVg31cCA==" length="3288726" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.1.2/oh-my-grid-1.1.2.zip" type="application/octet-stream" sparkle:edSignature="QuErnOLqYcmpXi7ESg8g9XyzWqjrOpNi+nQiQzx1wSA5YojSQQtObm+qSnIUdl6hokmuPIv0/AGyzY/vHADOAw==" length="3289681" />
     </item>
   </channel>
 </rss>
