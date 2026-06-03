@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>oh-my-grid</title>
+    <link>https://raw.githubusercontent.com/Canine89/oh-my-grid/main/appcast.xml</link>
+    <description>oh-my-grid 업데이트</description>
+    <language>ko</language>
+    <item>
+      <title>1.0.0</title>
+      <pubDate>Wed, 03 Jun 2026 11:21:30 +0000</pubDate>
+      <sparkle:version>1</sparkle:version>
+      <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<h2>oh-my-grid 1.0.0</h2>
+<ul>
+<li>첫 릴리스 🎉</li>
+<li>창을 드래그하는 도중 우클릭하면 화면에 그리드 가이드 표시</li>
+<li>셀 블록을 끌어 놓으면 창이 해당 영역으로 스냅(이동·리사이즈)</li>
+<li>그리드 열·행 수 설정(기본 6×4)</li>
+<li>메뉴바 상주 · Sparkle 자동 업데이트</li>
+</ul>]]></description>
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.0.0/oh-my-grid-1.0.0.zip" type="application/octet-stream" sparkle:edSignature="jGV+JinYnaKbNg0JgDQENE4P/sQ08Gq5cm7ybB3fuvXiwlulLznszgGsJCksFoqNmHzjbfOY1deOot0ddDecCw==" length="1356122" />
+    </item>
+  </channel>
+</rss>
