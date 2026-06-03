@@ -63,7 +63,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
         stack.addArrangedSubview(permBtn)
 
         let hint = NSTextField(wrappingLabelWithString:
-            "사용법: 창을 왼쪽 버튼으로 드래그하는 도중 오른쪽 버튼을 누르면 그리드가 뜹니다. 셀을 가로질러 끈 뒤 버튼을 놓으면 창이 스냅됩니다.")
+            "사용법: 창을 드래그하는 도중 오른쪽 버튼을 한 번 클릭하면 그리드가 켜집니다. 그대로 셀을 가로질러 움직인 뒤 왼쪽 버튼을 놓으면 창이 스냅됩니다. (다시 우클릭하거나 Esc로 취소)")
         hint.font = .systemFont(ofSize: 11)
         hint.textColor = .tertiaryLabelColor
         hint.preferredMaxLayoutWidth = 340

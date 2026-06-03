@@ -12,6 +12,8 @@ final class MouseEventTap {
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var leftDown = false
+    /// 그리드 모드 토글로 우클릭(down)을 소비했으면 짝이 되는 up도 소비(컨텍스트 메뉴 차단).
+    private var consumedRightDown = false
 
     /// 앱 시작 시 1회 호출 — 탭 설치. 권한이 없으면 false.
     @discardableResult
@@ -82,17 +84,24 @@ final class MouseEventTap {
             return pass   // 좌클릭은 절대 소비하지 않는다.
 
         case .rightMouseDown:
-            // 좌드래그 도중에만 무장. 평상시 우클릭/컨텍스트 메뉴는 건드리지 않는다.
-            glog("rightMouseDown @\(pt(event.location)) leftDown=\(leftDown) enabled=\(Settings.shared.enabled)")
-            if leftDown, session.arm(at: event.location) {
-                return nil                // 컨텍스트 메뉴가 뜨지 않도록 소비.
+            // 좌드래그 도중 우클릭(클릭) = 그리드 모드 토글. 우버튼을 계속 누르고 있을 필요 없다.
+            // 켜진 상태에서 다시 우클릭하면 그리드 모드 해제(일반 드래그로 복귀).
+            if leftDown {
+                if session.isArmed {
+                    session.cancel()
+                    consumedRightDown = true
+                    return nil
+                } else if session.arm(at: event.location) {
+                    consumedRightDown = true
+                    return nil
+                }
             }
             return pass
 
         case .rightMouseUp:
-            // 그리드를 닫고 선택을 확정만 한다(창은 아직 안 옮김). 실제 스냅은 좌버튼 해제 때.
-            if session.isArmed {
-                session.lockSelection()
+            // 토글로 소비한 우클릭의 짝 → 컨텍스트 메뉴가 뜨지 않게 함께 소비.
+            if consumedRightDown {
+                consumedRightDown = false
                 return nil
             }
             return pass
@@ -126,8 +135,6 @@ final class MouseEventTap {
             return pass
         }
     }
-
-    private func pt(_ p: CGPoint) -> String { "(\(Int(p.x)),\(Int(p.y)))" }
 
     /// 무장 중 Esc 등으로 외부에서 취소할 때.
     func cancelSession() {
