@@ -6,17 +6,16 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.0.1</title>
-      <pubDate>Wed, 03 Jun 2026 11:32:22 +0000</pubDate>
-      <sparkle:version>2</sparkle:version>
-      <sparkle:shortVersionString>1.0.1</sparkle:shortVersionString>
+      <title>1.0.2</title>
+      <pubDate>Wed, 03 Jun 2026 11:44:04 +0000</pubDate>
+      <sparkle:version>3</sparkle:version>
+      <sparkle:shortVersionString>1.0.2</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.0.1</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.0.2</h2>
 <ul>
-<li>동작 방식 변경: 오른쪽 버튼을 계속 누르지 않고, 드래그 도중 **오른쪽 클릭 한 번**으로 그리드를 켭니다</li>
-<li>왼쪽 버튼을 놓으면 스냅 완료 · 다시 오른쪽 클릭하거나 Esc로 취소</li>
+<li>새 앱 아이콘 적용 (그리드 + 캐릭터 로고)</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.0.1/oh-my-grid-1.0.1.zip" type="application/octet-stream" sparkle:edSignature="bxtzzKlQcFdXysWuQrBKYlUmx88pwsGuvCZWh/u6WWws9cUIUz9smmFNBz1gMrR6wQJuvG9fzcNNWRrSouTlBw==" length="1355819" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.0.2/oh-my-grid-1.0.2.zip" type="application/octet-stream" sparkle:edSignature="PJThFmrLvvBbwI6HqBSbEOZwRm+koWnWjvbPhodNiRuvQRsRQ5kFNqnfVw6dJ8/zrtKH0SaduQZxhnU5BUPJDA==" length="3283172" />
     </item>
   </channel>
 </rss>
