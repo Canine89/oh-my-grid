@@ -1,4 +1,8 @@
-# oh-my-grid 🪟
+<p align="center">
+  <img src="logo-source.png" width="180" alt="oh-my-grid 로고">
+</p>
+
+<h1 align="center">oh-my-grid 🪟</h1>
 
 드래그하던 창을 **그리드에 맞춰 한 번에 배치**하는 macOS 창 정렬 도구. 창을 옮기는 도중 오른쪽 버튼만 누르면 화면에 그리드가 뜨고, 셀을 가로질러 끌어 놓으면 창이 그 영역에 딱 맞게 들어갑니다.
 
