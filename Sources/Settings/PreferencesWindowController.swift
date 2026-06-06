@@ -1,8 +1,9 @@
 import AppKit
+import UniformTypeIdentifiers
 
 /// 그리드 크기·활성 설정 + 접근성 권한 상태를 보여주는 환경설정 창.
 @MainActor
-final class PreferencesWindowController: NSObject, NSWindowDelegate {
+final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableViewDataSource, NSTableViewDelegate {
     private var window: NSWindow?
 
     private let enabledCheck = NSButton(checkboxWithTitle: "그리드 제스처 활성화", target: nil, action: nil)
@@ -12,6 +13,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
     private let rowsField = NSTextField()
     private let rowsStepper = NSStepper()
     private let permissionLabel = NSTextField(labelWithString: "")
+    private let exclusionTable = NSTableView()
 
     func showWindow() {
         if window == nil { build() }
@@ -22,7 +24,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
     }
 
     private func build() {
-        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 320),
+        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 520),
                            styleMask: [.titled, .closable],
                            backing: .buffered, defer: false)
         win.title = "\(Brand.name) 설정"
@@ -55,6 +57,38 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
                                                 field: rowsField, stepper: rowsStepper,
                                                 action: #selector(rowsChanged)))
 
+        // 예외 앱 목록 (이 앱들이 맨 앞이면 그리드/스냅이 입력에 개입하지 않음)
+        let exclTitle = NSTextField(labelWithString: "이 앱에서는 그리드 끄기 (게임 등)")
+        stack.addArrangedSubview(exclTitle)
+
+        let col = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("app"))
+        col.title = "제외할 앱"
+        col.width = 320
+        exclusionTable.addTableColumn(col)
+        exclusionTable.headerView = nil
+        exclusionTable.dataSource = self
+        exclusionTable.delegate = self
+        exclusionTable.rowHeight = 20
+        exclusionTable.allowsMultipleSelection = true
+
+        let scroll = NSScrollView()
+        scroll.hasVerticalScroller = true
+        scroll.borderType = .bezelBorder
+        scroll.documentView = exclusionTable
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        scroll.heightAnchor.constraint(equalToConstant: 96).isActive = true
+        scroll.widthAnchor.constraint(equalToConstant: 340).isActive = true
+        stack.addArrangedSubview(scroll)
+
+        let addBtn = NSButton(title: "앱 추가…", target: self, action: #selector(addExcludedApp))
+        addBtn.bezelStyle = .rounded
+        let removeBtn = NSButton(title: "선택 제거", target: self, action: #selector(removeSelectedExcludedApps))
+        removeBtn.bezelStyle = .rounded
+        let exclBtnRow = NSStackView(views: [addBtn, removeBtn])
+        exclBtnRow.orientation = .horizontal
+        exclBtnRow.spacing = 8
+        stack.addArrangedSubview(exclBtnRow)
+
         // 권한 상태
         permissionLabel.font = .systemFont(ofSize: 11)
         permissionLabel.textColor = .secondaryLabelColor
@@ -69,7 +103,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
         stack.addArrangedSubview(permBtn)
 
         let hint = NSTextField(wrappingLabelWithString:
-            "사용법: 창을 드래그하는 도중 오른쪽 버튼을 한 번 클릭하면 그리드가 켜집니다. 그대로 셀을 가로질러 움직인 뒤 왼쪽 버튼을 놓으면 창이 스냅됩니다. (다시 우클릭하거나 Esc로 취소)\n가장자리 스냅: 창을 화면 좌·우·아래 끝으로 끌면 절반, 위 끝으로 끌면 최대화됩니다.")
+            "사용법: 창을 드래그하는 도중 오른쪽 버튼을 한 번 클릭하면 그리드가 켜집니다. 그대로 셀을 가로질러 움직인 뒤 왼쪽 버튼을 놓으면 창이 스냅됩니다. (다시 우클릭하거나 Esc로 취소)\n가장자리 스냅: 창을 화면 좌·우·아래 끝으로 끌면 절반, 위 끝으로 끌면 최대화됩니다.\n게임처럼 드래그·우클릭을 쓰는 앱은 위 목록에 추가하면 그 앱에서는 제스처가 동작하지 않습니다.")
         hint.font = .systemFont(ofSize: 11)
         hint.textColor = .tertiaryLabelColor
         hint.preferredMaxLayoutWidth = 340
@@ -119,6 +153,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
         colsStepper.integerValue = Settings.shared.columns
         rowsField.integerValue = Settings.shared.rows
         rowsStepper.integerValue = Settings.shared.rows
+        exclusionTable.reloadData()
         if AccessibilityPermission.isGranted {
             permissionLabel.stringValue = "✅ 손쉬운 사용 권한 허용됨 — 창을 옮길 수 있습니다."
         } else {
@@ -154,6 +189,54 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
 
     @objc private func openAccessibility() {
         AccessibilityPermission.openSystemSettings()
+    }
+
+    // MARK: - 예외 앱 목록
+
+    @objc private func addExcludedApp() {
+        let panel = NSOpenPanel()
+        panel.title = "그리드를 끌 앱 선택"
+        panel.message = "이 앱이 맨 앞일 때는 그리드·가장자리 스냅이 동작하지 않습니다."
+        panel.directoryURL = URL(fileURLWithPath: "/Applications")
+        panel.allowedContentTypes = [.application]
+        panel.allowsMultipleSelection = true
+        panel.canChooseDirectories = false
+        guard panel.runModal() == .OK else { return }
+        for url in panel.urls {
+            if let id = Bundle(url: url)?.bundleIdentifier {
+                Settings.shared.addExcludedApp(id)
+            }
+        }
+        exclusionTable.reloadData()
+    }
+
+    @objc private func removeSelectedExcludedApps() {
+        // 인덱스가 큰 쪽부터 제거해 앞쪽 인덱스가 밀리지 않게 한다.
+        for row in exclusionTable.selectedRowIndexes.sorted(by: >) {
+            let apps = Settings.shared.excludedApps
+            guard row < apps.count else { continue }
+            Settings.shared.removeExcludedApp(apps[row])
+        }
+        exclusionTable.reloadData()
+    }
+
+    /// bundle ID → 표시용 앱 이름(찾을 수 없으면 ID 그대로).
+    private func appName(forBundleID id: String) -> String {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: id) else { return id }
+        return url.deletingPathExtension().lastPathComponent
+    }
+
+    // MARK: - NSTableViewDataSource
+
+    func numberOfRows(in tableView: NSTableView) -> Int {
+        Settings.shared.excludedApps.count
+    }
+
+    func tableView(_ tableView: NSTableView, objectValueFor tableColumn: NSTableColumn?, row: Int) -> Any? {
+        let apps = Settings.shared.excludedApps
+        guard row < apps.count else { return nil }
+        let id = apps[row]
+        return "\(appName(forBundleID: id))  —  \(id)"
     }
 
     private func notifyChanged() {

@@ -7,6 +7,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         setupMainMenu()
         menuBar = MenuBarController()
 
+        // 맨 앞 앱 추적 시작(예외 목록 판정용).
+        ActiveAppMonitor.shared.start()
+
         // 손쉬운 사용(접근성) 권한 확인 → 이벤트 탭 시작.
         // 권한이 없으면 prompt를 띄우고 안내한다. 권한 부여 후 앱 재실행이 필요하다.
         if AccessibilityPermission.isGranted {
@@ -24,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         MouseEventTap.shared.stop()
+        ActiveAppMonitor.shared.stop()
     }
 
     /// 표준 Edit 메뉴(⌘C 등)를 둔다.

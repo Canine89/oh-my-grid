@@ -13,6 +13,7 @@ final class Settings {
         static let edgeSnap = "edgeSnapEnabled"
         static let outerMargin = "outerMargin"
         static let innerGap = "innerGap"
+        static let excludedApps = "excludedApps"
     }
 
     /// 그리드 열 수. 기본 6.
@@ -55,6 +56,29 @@ final class Settings {
     var innerGap: CGFloat {
         get { CGFloat(defaults.double(forKey: Keys.innerGap)) }
         set { defaults.set(Double(newValue), forKey: Keys.innerGap) }
+    }
+
+    /// 제스처를 끌 앱들의 bundle ID 목록. 이 앱들이 맨 앞이면 이벤트 탭이 입력에 개입하지 않는다.
+    /// (드래그를 강제하는 게임 등에서 우클릭·드래그가 가로채이는 문제를 피하기 위함.)
+    var excludedApps: [String] {
+        get { defaults.stringArray(forKey: Keys.excludedApps) ?? [] }
+        set { defaults.set(newValue, forKey: Keys.excludedApps) }
+    }
+
+    /// 해당 bundle ID가 예외 목록에 있는지.
+    func isExcluded(bundleID: String) -> Bool {
+        excludedApps.contains(bundleID)
+    }
+
+    /// 예외 목록에 추가(빈 값·중복은 무시).
+    func addExcludedApp(_ bundleID: String) {
+        guard !bundleID.isEmpty, !excludedApps.contains(bundleID) else { return }
+        excludedApps.append(bundleID)
+    }
+
+    /// 예외 목록에서 제거.
+    func removeExcludedApp(_ bundleID: String) {
+        excludedApps.removeAll { $0 == bundleID }
     }
 }
 

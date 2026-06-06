@@ -65,13 +65,23 @@ final class MouseEventTap {
         let pass = Unmanaged.passUnretained(event)
         let session = GridSessionController.shared
 
-        switch type {
-        case .tapDisabledByTimeout, .tapDisabledByUserInput:
-            // OS가 부하/타임아웃으로 탭을 끈 경우 재활성.
+        // OS가 부하/타임아웃으로 탭을 끈 경우는 예외 앱 여부와 무관하게 항상 재활성.
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             glog("탭 비활성화 감지(\(type.rawValue)) → 재활성")
             if let tap { CGEvent.tapEnable(tap: tap, enable: true) }
             return pass
+        }
 
+        // 예외 목록에 든 앱(게임 등)이 맨 앞이면 입력에 일절 개입하지 않는다.
+        // 진행 중이던 세션·상태는 깔끔히 정리해 앱 전환 후 잔상이 남지 않게 한다.
+        if ActiveAppMonitor.shared.isFrontmostExcluded {
+            if session.isArmed || session.hasPending { session.cancel() }
+            leftDown = false
+            consumedRightDown = false
+            return pass
+        }
+
+        switch type {
         case .leftMouseDown:
             leftDown = true
             // 일반 드래그 가장자리 스냅을 위해 후보 창을 캡처(엣지 스냅이 꺼져 있으면 내부에서 무시).
