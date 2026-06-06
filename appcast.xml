@@ -6,16 +6,16 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.1.2</title>
-      <pubDate>Wed, 03 Jun 2026 15:16:21 +0000</pubDate>
-      <sparkle:version>6</sparkle:version>
-      <sparkle:shortVersionString>1.1.2</sparkle:shortVersionString>
+      <title>1.2.0</title>
+      <pubDate>Sat, 06 Jun 2026 13:20:25 +0000</pubDate>
+      <sparkle:version>7</sparkle:version>
+      <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.1.2</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.2.0</h2>
 <ul>
-<li>드래그 감지 때문에 다른 앱 클릭/입력이 지연되던 문제 수정 (창 조회를 첫 드래그 시점에 비동기로 처리, 순수 클릭에는 영향 없음)</li>
+<li>앱별 예외 목록 추가: 지정한 앱(게임 등)이 맨 앞일 때는 그리드·가장자리 스냅이 마우스 입력에 일절 개입하지 않음 — 드래그·우클릭을 강제하는 게임에서 입력이 가로채이던 문제 해결. 설정 창에서 앱을 추가/제거.</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.1.2/oh-my-grid-1.1.2.zip" type="application/octet-stream" sparkle:edSignature="QuErnOLqYcmpXi7ESg8g9XyzWqjrOpNi+nQiQzx1wSA5YojSQQtObm+qSnIUdl6hokmuPIv0/AGyzY/vHADOAw==" length="3289681" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.2.0/oh-my-grid-1.2.0.zip" type="application/octet-stream" sparkle:edSignature="N9q4kOx3iSg+YPDh6Bu5Sue6Qim3xgmTTm7bu42WvtfrxfpLhybD7Nhuop75kgrxYTjIYemrSDHPGnWdhi3/CA==" length="3301930" />
     </item>
   </channel>
 </rss>
