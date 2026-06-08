@@ -14,6 +14,8 @@ final class MouseEventTap {
     private var leftDown = false
     /// 그리드 모드 토글로 우클릭(down)을 소비했으면 짝이 되는 up도 소비(컨텍스트 메뉴 차단).
     private var consumedRightDown = false
+    /// 창 크기 고정 클릭(down)을 소비했으면 짝이 되는 up도 소비.
+    private var consumedResizeDown = false
 
     /// 앱 시작 시 1회 호출 — 탭 설치. 권한이 없으면 false.
     @discardableResult
@@ -70,6 +72,33 @@ final class MouseEventTap {
             glog("탭 비활성화 감지(\(type.rawValue)) → 재활성")
             if let tap { CGEvent.tapEnable(tap: tap, enable: true) }
             return pass
+        }
+
+        // 창 크기 고정 모드: 메뉴에서 비율을 고른 직후 — 다음 좌클릭으로 그 창을 리사이즈하고 소비한다.
+        // (사용자가 명시적으로 시작한 동작이라 예외 앱 가드보다 먼저 처리한다.)
+        let resize = WindowResizeController.shared
+        if resize.isArmed {
+            switch type {
+            case .leftMouseDown:
+                resize.applyAt(point: event.location)
+                consumedResizeDown = true
+                return nil
+            case .leftMouseUp:
+                if consumedResizeDown { consumedResizeDown = false; return nil }
+                return pass
+            case .keyDown:
+                if event.getIntegerValueField(.keyboardEventKeycode) == 53 {   // Esc
+                    resize.cancel()
+                    glog("Esc → 창 크기 고정 취소")
+                    return nil
+                }
+                return pass
+            case .rightMouseDown:
+                resize.cancel()   // 우클릭으로도 취소
+                return pass
+            default:
+                return pass
+            }
         }
 
         // 예외 목록에 든 앱(게임 등)이 맨 앞이면 입력에 일절 개입하지 않는다.

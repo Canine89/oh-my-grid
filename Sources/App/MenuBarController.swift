@@ -25,6 +25,19 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         menu.addItem(.separator())
 
         enabledItem = addItem(to: menu, title: "그리드 켜기", action: #selector(toggleEnabled))
+
+        // 창 크기 고정: 비율 선택 → 바꿀 창 클릭.
+        let resizeItem = NSMenuItem(title: "창 크기 고정", action: nil, keyEquivalent: "")
+        let resizeMenu = NSMenu()
+        for (i, preset) in WindowResizeController.presets.enumerated() {
+            let it = NSMenuItem(title: preset.label, action: #selector(armResize(_:)), keyEquivalent: "")
+            it.target = self
+            it.tag = i
+            resizeMenu.addItem(it)
+        }
+        resizeItem.submenu = resizeMenu
+        menu.addItem(resizeItem)
+
         addItem(to: menu, title: "설정…", action: #selector(openPreferences), key: ",")
 
         // Sparkle 업데이트 확인.
@@ -60,6 +73,11 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     @objc private func toggleEnabled() {
         Settings.shared.enabled.toggle()
         NotificationCenter.default.post(name: .gridSettingsChanged, object: nil)
+    }
+
+    @objc private func armResize(_ sender: NSMenuItem) {
+        let preset = WindowResizeController.presets[sender.tag]
+        WindowResizeController.shared.arm(size: preset.size, label: preset.label)
     }
 
     @objc private func openPreferences() {
