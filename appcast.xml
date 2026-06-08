@@ -6,16 +6,16 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.2.0</title>
-      <pubDate>Sat, 06 Jun 2026 13:20:25 +0000</pubDate>
-      <sparkle:version>7</sparkle:version>
-      <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+      <title>1.3.0</title>
+      <pubDate>Mon, 08 Jun 2026 06:35:33 +0000</pubDate>
+      <sparkle:version>8</sparkle:version>
+      <sparkle:shortVersionString>1.3.0</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.2.0</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.3.0</h2>
 <ul>
-<li>앱별 예외 목록 추가: 지정한 앱(게임 등)이 맨 앞일 때는 그리드·가장자리 스냅이 마우스 입력에 일절 개입하지 않음 — 드래그·우클릭을 강제하는 게임에서 입력이 가로채이던 문제 해결. 설정 창에서 앱을 추가/제거.</li>
+<li>창 크기 고정 추가: 메뉴바 → **창 크기 고정**에서 비율(4:3 720×480, 16:9 1280×720 / 1920×1080)을 고른 뒤 바꿀 창을 클릭하면 그 크기로 맞춰짐. 좌상단 위치는 유지하고 화면 가시 영역 안으로 보정. (Esc·우클릭으로 취소)</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.2.0/oh-my-grid-1.2.0.zip" type="application/octet-stream" sparkle:edSignature="N9q4kOx3iSg+YPDh6Bu5Sue6Qim3xgmTTm7bu42WvtfrxfpLhybD7Nhuop75kgrxYTjIYemrSDHPGnWdhi3/CA==" length="3301930" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.3.0/oh-my-grid-1.3.0.zip" type="application/octet-stream" sparkle:edSignature="5iSewJ0WZAAoAl2skRrew0Bmw2Ov1zWbF/HNxm6fRZ6rudyvg838+75RPRzIHJadEXfo//6Xndos7T9HnAQuAA==" length="3305945" />
     </item>
   </channel>
 </rss>
