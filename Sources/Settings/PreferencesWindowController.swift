@@ -24,7 +24,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
     }
 
     private func build() {
-        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 520),
+        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 560),
                            styleMask: [.titled, .closable],
                            backing: .buffered, defer: false)
         win.title = "\(Brand.name) 설정"
@@ -56,6 +56,18 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
         stack.addArrangedSubview(makeStepperRow(title: "행 (세로 칸 수)",
                                                 field: rowsField, stepper: rowsStepper,
                                                 action: #selector(rowsChanged)))
+
+        // 적용 버튼: 숫자를 고친 뒤 Enter 없이도 이 버튼으로 반영할 수 있게 한다.
+        let applyBtn = NSButton(title: "적용", target: self, action: #selector(applyGridSize))
+        applyBtn.bezelStyle = .rounded
+        applyBtn.keyEquivalent = "\r"          // Enter 로도 적용(기본 버튼)
+        let applySpacer = NSView()
+        applySpacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        let applyRow = NSStackView(views: [applySpacer, applyBtn])
+        applyRow.orientation = .horizontal
+        applyRow.alignment = .centerY
+        applyRow.widthAnchor.constraint(equalToConstant: 340).isActive = true
+        stack.addArrangedSubview(applyRow)
 
         // 예외 앱 목록 (이 앱들이 맨 앞이면 그리드/스냅이 입력에 개입하지 않음)
         let exclTitle = NSTextField(labelWithString: "이 앱에서는 그리드 끄기 (게임 등)")
@@ -184,6 +196,16 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
         Settings.shared.rows = v
         rowsField.integerValue = Settings.shared.rows
         rowsStepper.integerValue = Settings.shared.rows
+        notifyChanged()
+    }
+
+    /// 두 입력칸의 현재 값을 한 번에 반영(Enter 없이도 적용). 클램프된 값으로 UI를 되맞춘다.
+    @objc private func applyGridSize() {
+        // 편집 중이던 텍스트필드의 값을 확정(포커스 안 옮겨도 입력값을 읽도록).
+        window?.makeFirstResponder(nil)
+        Settings.shared.columns = colsField.integerValue
+        Settings.shared.rows = rowsField.integerValue
+        refresh()
         notifyChanged()
     }
 

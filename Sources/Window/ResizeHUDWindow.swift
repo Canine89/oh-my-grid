@@ -5,7 +5,7 @@ import AppKit
 final class ResizeHUDWindow: NSWindow {
     init(text: String) {
         let label = NSTextField(labelWithString: text)
-        label.font = .systemFont(ofSize: 13, weight: .medium)
+        label.font = .systemFont(ofSize: 13, weight: .semibold)
         label.textColor = .white
         label.alignment = .center
         label.sizeToFit()
@@ -25,12 +25,15 @@ final class ResizeHUDWindow: NSWindow {
         ignoresMouseEvents = true
         isReleasedWhenClosed = false
 
-        let bg = NSVisualEffectView(frame: NSRect(x: 0, y: 0, width: w, height: h))
-        bg.material = .hudWindow
-        bg.state = .active
+        // 반투명 재질은 밝은 배경/화면 녹화에서 흰 글자 대비가 약해 묻힌다.
+        // 어디서나(녹화 포함) 또렷하도록 불투명한 진한 배경 + 흰 글자로 고정한다.
+        let bg = NSView(frame: NSRect(x: 0, y: 0, width: w, height: h))
         bg.wantsLayer = true
+        bg.layer?.backgroundColor = NSColor(white: 0.10, alpha: 0.95).cgColor
         bg.layer?.cornerRadius = 10
         bg.layer?.masksToBounds = true
+        bg.layer?.borderWidth = 1
+        bg.layer?.borderColor = NSColor(white: 1, alpha: 0.25).cgColor
         label.frame = NSRect(x: padX, y: (h - label.frame.height) / 2,
                              width: w - padX * 2, height: label.frame.height)
         bg.addSubview(label)
