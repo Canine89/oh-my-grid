@@ -6,16 +6,17 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.4.0</title>
-      <pubDate>Mon, 08 Jun 2026 06:41:55 +0000</pubDate>
-      <sparkle:version>9</sparkle:version>
-      <sparkle:shortVersionString>1.4.0</sparkle:shortVersionString>
+      <title>1.4.1</title>
+      <pubDate>Mon, 08 Jun 2026 15:03:33 +0000</pubDate>
+      <sparkle:version>10</sparkle:version>
+      <sparkle:shortVersionString>1.4.1</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.4.0</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.4.1</h2>
 <ul>
-<li>창 크기 고정 대상 미리보기: 비율을 고른 뒤 마우스를 움직이면 커서 아래 창이 강조 표시되어, 어떤 창이 바뀔지 클릭 전에 보입니다.</li>
+<li>설정의 그리드 열·행에 **[적용] 버튼** 추가 — 숫자를 고친 뒤 Enter를 누르지 않아도 적용됨(Enter로도 적용 가능).</li>
+<li>창 크기 고정 안내 HUD의 글자 대비 개선 — 반투명 재질을 불투명 진한 배경으로 바꿔 밝은 배경·화면 녹화에서도 또렷하게 보임.</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.4.0/oh-my-grid-1.4.0.zip" type="application/octet-stream" sparkle:edSignature="8HVGV2qGw6cfsTOzZHE8DHja4PFNqSQHGQT7AsaR/27oHZOAGb8mcxjYh1SMPPDDj6Nn3YIMn7D3DxU/ORUiCg==" length="3309982" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.4.1/oh-my-grid-1.4.1.zip" type="application/octet-stream" sparkle:edSignature="pXt5WBldRV33+4ji77La5d/d9RAQqMkZjgUNMZclwvMJ/D3iNCWIdLWRiLolpMXRDlAbv0C46Sm8p68fSyabAw==" length="3310726" />
     </item>
   </channel>
 </rss>
