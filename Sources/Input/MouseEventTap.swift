@@ -86,6 +86,9 @@ final class MouseEventTap {
             case .leftMouseUp:
                 if consumedResizeDown { consumedResizeDown = false; return nil }
                 return pass
+            case .mouseMoved:
+                resize.updateHover(at: event.location)
+                return pass
             case .keyDown:
                 if event.getIntegerValueField(.keyboardEventKeycode) == 53 {   // Esc
                     resize.cancel()
