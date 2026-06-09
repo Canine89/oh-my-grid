@@ -6,16 +6,18 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.5.0</title>
-      <pubDate>Tue, 09 Jun 2026 10:11:17 +0000</pubDate>
-      <sparkle:version>11</sparkle:version>
-      <sparkle:shortVersionString>1.5.0</sparkle:shortVersionString>
+      <title>1.6.0</title>
+      <pubDate>Tue, 09 Jun 2026 12:39:22 +0000</pubDate>
+      <sparkle:version>12</sparkle:version>
+      <sparkle:shortVersionString>1.6.0</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.5.0</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.6.0</h2>
 <ul>
-<li>트랙패드용 그리드 단축키 추가: **⌃⌥G** 를 누르면 커서 아래 창으로 그리드 모드가 켜지고(드래그·우클릭 불필요), 이동해 셀을 고른 뒤 클릭하거나 ⌃⌥G 를 다시 누르면 배치됨(Esc 취소). 기존 "드래그 중 우클릭" 방식은 그대로 유지.</li>
+<li>트랙패드 단축키를 **"드래그 중 입력"** 방식으로 변경: 창을 드래그하는 도중 단축키(기본 ⌃⌥G)를 누르면 우클릭과 똑같이 그리드가 켜지고, 셀을 고른 뒤 손을 떼면 배치됨. (1.5.0의 클릭-커밋 단독 모드는 제거)</li>
+<li>단축키를 **설정에서 변경** 가능: 설정… → 그리드 단축키에서 원하는 조합으로 녹화.</li>
+<li>macOS **시스템·앱 기본 단축키는 지정 불가**: ⌘Space·⌃↑·⇧⌘4·⌘C 등 충돌 위험 단축키를 처음부터 막고, 수정키 없는 키도 거부.</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.5.0/oh-my-grid-1.5.0.zip" type="application/octet-stream" sparkle:edSignature="umxVntytDrJeC8rVFsTpFxy5UJ6lMWfZaXlDLySexZA+yvTAs9S9XESbp9j49yMOHPWT8DagayRHt4atvuiqAQ==" length="3311499" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.6.0/oh-my-grid-1.6.0.zip" type="application/octet-stream" sparkle:edSignature="unu83kWoKC9wQ8XcjHmahfT6Dd82yYwDBxIHE/1P8knThSBH+vgvrqJ75PcYTk/Mela2ONcbHMvhpyYGgQXSAA==" length="3323528" />
     </item>
   </channel>
 </rss>
