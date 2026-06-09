@@ -38,6 +38,11 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         resizeItem.submenu = resizeMenu
         menu.addItem(resizeItem)
 
+        // 트랙패드용 안내(클릭 불가 정보 항목).
+        let hotkeyHint = NSMenuItem(title: "트랙패드: ⌃⌥G 로 그리드 모드", action: nil, keyEquivalent: "")
+        hotkeyHint.isEnabled = false
+        menu.addItem(hotkeyHint)
+
         addItem(to: menu, title: "설정…", action: #selector(openPreferences), key: ",")
 
         // Sparkle 업데이트 확인.

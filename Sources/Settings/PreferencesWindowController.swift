@@ -115,7 +115,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
         stack.addArrangedSubview(permBtn)
 
         let hint = NSTextField(wrappingLabelWithString:
-            "사용법: 창을 드래그하는 도중 오른쪽 버튼을 한 번 클릭하면 그리드가 켜집니다. 그대로 셀을 가로질러 움직인 뒤 왼쪽 버튼을 놓으면 창이 스냅됩니다. (다시 우클릭하거나 Esc로 취소)\n가장자리 스냅: 창을 화면 좌·우·아래 끝으로 끌면 절반, 위 끝으로 끌면 최대화됩니다.\n게임처럼 드래그·우클릭을 쓰는 앱은 위 목록에 추가하면 그 앱에서는 제스처가 동작하지 않습니다.")
+            "사용법: 창을 드래그하는 도중 오른쪽 버튼을 한 번 클릭하면 그리드가 켜집니다. 그대로 셀을 가로질러 움직인 뒤 왼쪽 버튼을 놓으면 창이 스냅됩니다. (다시 우클릭하거나 Esc로 취소)\n가장자리 스냅: 창을 화면 좌·우·아래 끝으로 끌면 절반, 위 끝으로 끌면 최대화됩니다.\n게임처럼 드래그·우클릭을 쓰는 앱은 위 목록에 추가하면 그 앱에서는 제스처가 동작하지 않습니다.\n트랙패드: ⌃⌥G 를 누르면 커서 아래 창으로 그리드 모드가 켜집니다. 이동해 셀을 고른 뒤 클릭하거나 ⌃⌥G 를 다시 누르면 배치(Esc 취소).")
         hint.font = .systemFont(ofSize: 11)
         hint.textColor = .tertiaryLabelColor
         hint.preferredMaxLayoutWidth = 340
