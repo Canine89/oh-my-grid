@@ -14,6 +14,8 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
     private let rowsStepper = NSStepper()
     private let permissionLabel = NSTextField(labelWithString: "")
     private let exclusionTable = NSTableView()
+    private var hotkeyRecorder: ShortcutRecorderView?
+    private let hotkeyError = NSTextField(labelWithString: "")
 
     func showWindow() {
         if window == nil { build() }
@@ -24,7 +26,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
     }
 
     private func build() {
-        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 560),
+        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 660),
                            styleMask: [.titled, .closable],
                            backing: .buffered, defer: false)
         win.title = "\(Brand.name) 설정"
@@ -68,6 +70,34 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
         applyRow.alignment = .centerY
         applyRow.widthAnchor.constraint(equalToConstant: 340).isActive = true
         stack.addArrangedSubview(applyRow)
+
+        // 그리드 단축키 (창 드래그 중 입력 → 우클릭 대신 그리드 발동)
+        let hkTitle = NSTextField(labelWithString: "그리드 단축키 (창 드래그 중 입력)")
+        stack.addArrangedSubview(hkTitle)
+
+        let recorder = ShortcutRecorderView(hotkey: Settings.shared.gridHotkey)
+        recorder.onChange = { [weak self] hk in
+            Settings.shared.gridHotkey = hk
+            self?.hotkeyError.stringValue = ""
+            self?.notifyChanged()
+        }
+        recorder.onError = { [weak self] msg in self?.hotkeyError.stringValue = msg }
+        hotkeyRecorder = recorder
+        let resetHotkeyBtn = NSButton(title: "기본값(⌃⌥G)", target: self, action: #selector(resetHotkey))
+        resetHotkeyBtn.bezelStyle = .rounded
+        let hkRow = NSStackView(views: [recorder, resetHotkeyBtn])
+        hkRow.orientation = .horizontal
+        hkRow.spacing = 8
+        hkRow.alignment = .centerY
+        hkRow.widthAnchor.constraint(equalToConstant: 340).isActive = true
+        stack.addArrangedSubview(hkRow)
+
+        hotkeyError.font = .systemFont(ofSize: 11)
+        hotkeyError.textColor = .systemRed
+        hotkeyError.lineBreakMode = .byWordWrapping
+        hotkeyError.maximumNumberOfLines = 2
+        hotkeyError.preferredMaxLayoutWidth = 340
+        stack.addArrangedSubview(hotkeyError)
 
         // 예외 앱 목록 (이 앱들이 맨 앞이면 그리드/스냅이 입력에 개입하지 않음)
         let exclTitle = NSTextField(labelWithString: "이 앱에서는 그리드 끄기 (게임 등)")
@@ -115,7 +145,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
         stack.addArrangedSubview(permBtn)
 
         let hint = NSTextField(wrappingLabelWithString:
-            "사용법: 창을 드래그하는 도중 오른쪽 버튼을 한 번 클릭하면 그리드가 켜집니다. 그대로 셀을 가로질러 움직인 뒤 왼쪽 버튼을 놓으면 창이 스냅됩니다. (다시 우클릭하거나 Esc로 취소)\n가장자리 스냅: 창을 화면 좌·우·아래 끝으로 끌면 절반, 위 끝으로 끌면 최대화됩니다.\n게임처럼 드래그·우클릭을 쓰는 앱은 위 목록에 추가하면 그 앱에서는 제스처가 동작하지 않습니다.\n트랙패드: ⌃⌥G 를 누르면 커서 아래 창으로 그리드 모드가 켜집니다. 이동해 셀을 고른 뒤 클릭하거나 ⌃⌥G 를 다시 누르면 배치(Esc 취소).")
+            "사용법: 창을 드래그하는 도중 오른쪽 버튼을 한 번 클릭하면 그리드가 켜집니다. 그대로 셀을 가로질러 움직인 뒤 왼쪽 버튼을 놓으면 창이 스냅됩니다. (다시 우클릭하거나 Esc로 취소)\n가장자리 스냅: 창을 화면 좌·우·아래 끝으로 끌면 절반, 위 끝으로 끌면 최대화됩니다.\n게임처럼 드래그·우클릭을 쓰는 앱은 위 목록에 추가하면 그 앱에서는 제스처가 동작하지 않습니다.\n트랙패드: 창을 드래그하는 도중 위 단축키(기본 ⌃⌥G)를 누르면 우클릭처럼 그리드가 켜집니다.")
         hint.font = .systemFont(ofSize: 11)
         hint.textColor = .tertiaryLabelColor
         hint.preferredMaxLayoutWidth = 340
@@ -206,6 +236,13 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
         Settings.shared.columns = colsField.integerValue
         Settings.shared.rows = rowsField.integerValue
         refresh()
+        notifyChanged()
+    }
+
+    @objc private func resetHotkey() {
+        Settings.shared.gridHotkey = .default
+        hotkeyRecorder?.setHotkey(.default)
+        hotkeyError.stringValue = ""
         notifyChanged()
     }
 

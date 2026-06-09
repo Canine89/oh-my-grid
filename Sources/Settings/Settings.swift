@@ -14,6 +14,8 @@ final class Settings {
         static let outerMargin = "outerMargin"
         static let innerGap = "innerGap"
         static let excludedApps = "excludedApps"
+        static let hotkeyKeyCode = "gridHotkeyKeyCode"
+        static let hotkeyMods = "gridHotkeyMods"
     }
 
     /// 그리드 열 수. 기본 6.
@@ -79,6 +81,21 @@ final class Settings {
     /// 예외 목록에서 제거.
     func removeExcludedApp(_ bundleID: String) {
         excludedApps.removeAll { $0 == bundleID }
+    }
+
+    /// 그리드 발동 단축키(창 드래그 중 입력). 기본 ⌃⌥G.
+    var gridHotkey: Hotkey {
+        get {
+            guard let code = defaults.object(forKey: Keys.hotkeyKeyCode) as? Int,
+                  let mods = defaults.object(forKey: Keys.hotkeyMods) as? Int else {
+                return .default
+            }
+            return Hotkey(keyCode: code, mods: HotkeyModifiers(rawValue: mods))
+        }
+        set {
+            defaults.set(newValue.keyCode, forKey: Keys.hotkeyKeyCode)
+            defaults.set(newValue.mods.rawValue, forKey: Keys.hotkeyMods)
+        }
     }
 }
 

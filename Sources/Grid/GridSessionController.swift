@@ -10,8 +10,6 @@ final class GridSessionController {
     private init() {}
 
     private(set) var isArmed = false
-    /// 단축키로 무장됐는지(좌버튼 드래그 없이). true면 이동으로 셀 선택, 클릭/단축키로 커밋한다.
-    private(set) var armedViaHotkey = false
     /// 우클릭-업으로 선택이 잠긴 뒤(좌버튼 해제 대기 중)면 true.
     var hasPending: Bool { pendingWindow != nil }
 
@@ -154,30 +152,6 @@ final class GridSessionController {
         pendingWindow = nil
         pendingFrame = nil
         isArmed = false
-        armedViaHotkey = false
-    }
-
-    // MARK: - 단축키(트랙패드) 그리드 모드
-
-    /// 단축키 그리드 모드 시작 — 커서 아래 창을 잡아 그리드를 띄운다(창은 그대로 둠).
-    /// 드래그-홀드 없이 마우스 이동으로 셀을 고르고, 클릭/단축키로 커밋한다.
-    @discardableResult
-    func armViaHotkey(at point: CGPoint) -> Bool {
-        guard arm(at: point) else { return false }
-        armedViaHotkey = true
-        glog("단축키 그리드 모드 시작")
-        return true
-    }
-
-    /// 단축키 그리드 모드 커밋 — 선택 영역으로 즉시 스냅(진행 중인 OS 드래그가 없어 지연 불필요).
-    func commitHotkey() {
-        guard isArmed, armedViaHotkey, let window = targetWindow else { cancel(); return }
-        let frame = applyGaps(currentSelectionRect())
-        teardownOverlay()       // targetWindow를 nil로 만들기 전에 위에서 잡아둠.
-        isArmed = false
-        armedViaHotkey = false
-        AXWindowController.shared.setFrame(frame, for: window)
-        glog("단축키 그리드 커밋 \(rs(frame))")
     }
 
     // MARK: - 가장자리 절반 스냅

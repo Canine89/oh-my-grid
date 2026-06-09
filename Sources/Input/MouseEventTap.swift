@@ -16,8 +16,6 @@ final class MouseEventTap {
     private var consumedRightDown = false
     /// 창 크기 고정 클릭(down)을 소비했으면 짝이 되는 up도 소비.
     private var consumedResizeDown = false
-    /// 단축키 그리드 모드에서 커밋 클릭(down)을 소비했으면 짝이 되는 up도 소비.
-    private var consumedHotkeyClick = false
 
     /// 앱 시작 시 1회 호출 — 탭 설치. 권한이 없으면 false.
     @discardableResult
@@ -106,34 +104,6 @@ final class MouseEventTap {
             }
         }
 
-        // 단축키 그리드 모드(트랙패드용): 좌버튼 드래그 없이 무장된 상태.
-        // 마우스 이동으로 셀을 고르고, 클릭이나 단축키(⌃⌥G)로 커밋, Esc로 취소한다.
-        if session.armedViaHotkey {
-            switch type {
-            case .mouseMoved, .leftMouseDragged:
-                session.update(to: event.location)
-                return pass
-            case .leftMouseDown:
-                session.update(to: event.location)
-                session.commitHotkey()
-                consumedHotkeyClick = true
-                return nil
-            case .leftMouseUp:
-                if consumedHotkeyClick { consumedHotkeyClick = false; return nil }
-                return pass
-            case .keyDown:
-                if event.getIntegerValueField(.keyboardEventKeycode) == 53 {   // Esc
-                    session.cancel(); glog("Esc → 단축키 그리드 취소"); return nil
-                }
-                if isGridHotkey(event) { session.commitHotkey(); return nil }   // 다시 누르면 배치
-                return pass
-            case .rightMouseDown:
-                session.cancel(); return pass
-            default:
-                return pass
-            }
-        }
-
         // 예외 목록에 든 앱(게임 등)이 맨 앞이면 입력에 일절 개입하지 않는다.
         // 진행 중이던 세션·상태는 깔끔히 정리해 앱 전환 후 잔상이 남지 않게 한다.
         if ActiveAppMonitor.shared.isFrontmostExcluded {
@@ -209,9 +179,14 @@ final class MouseEventTap {
                 glog("Esc → 세션 취소")
                 return nil
             }
-            // ⌃⌥G → 단축키 그리드 모드 시작(커서 아래 창). 트랙패드에서 우클릭 없이 발동.
-            if !session.isArmed, isGridHotkey(event),
-               session.armViaHotkey(at: event.location) {
+            // 창을 드래그하는 도중 그리드 단축키 → 우클릭과 동일하게 그리드 토글.
+            // 트랙패드에서 "끌면서 우클릭"이 어려운 걸 키보드로 대체한다(기본 ⌃⌥G, 설정 변경 가능).
+            if leftDown, Settings.shared.gridHotkey.matches(event) {
+                if session.isArmed {
+                    session.cancel()
+                } else {
+                    session.arm(at: event.location)
+                }
                 return nil
             }
             return pass
@@ -224,13 +199,6 @@ final class MouseEventTap {
     /// 무장 중 Esc 등으로 외부에서 취소할 때.
     func cancelSession() {
         GridSessionController.shared.cancel()
-    }
-
-    /// ⌃⌥G (Control+Option+G) — 트랙패드용 그리드 모드 단축키. 정확히 ctrl+opt만 눌린 'g'.
-    private func isGridHotkey(_ event: CGEvent) -> Bool {
-        guard event.getIntegerValueField(.keyboardEventKeycode) == 5 else { return false }   // 'g'
-        let relevant: CGEventFlags = [.maskControl, .maskAlternate, .maskCommand, .maskShift]
-        return event.flags.intersection(relevant) == [.maskControl, .maskAlternate]
     }
 }
 

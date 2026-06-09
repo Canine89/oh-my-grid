@@ -6,6 +6,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     private var prefs: PreferencesWindowController?
     private var enabledItem: NSMenuItem?
     private var permissionItem: NSMenuItem?
+    private var hotkeyHintItem: NSMenuItem?
 
     override init() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -38,10 +39,11 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         resizeItem.submenu = resizeMenu
         menu.addItem(resizeItem)
 
-        // 트랙패드용 안내(클릭 불가 정보 항목).
-        let hotkeyHint = NSMenuItem(title: "트랙패드: ⌃⌥G 로 그리드 모드", action: nil, keyEquivalent: "")
+        // 트랙패드용 안내(클릭 불가 정보 항목). 제목은 menuWillOpen에서 현재 단축키로 갱신.
+        let hotkeyHint = NSMenuItem(title: "", action: nil, keyEquivalent: "")
         hotkeyHint.isEnabled = false
         menu.addItem(hotkeyHint)
+        hotkeyHintItem = hotkeyHint
 
         addItem(to: menu, title: "설정…", action: #selector(openPreferences), key: ",")
 
@@ -65,6 +67,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     func menuWillOpen(_ menu: NSMenu) {
         enabledItem?.state = Settings.shared.enabled ? .on : .off
         permissionItem?.isHidden = AccessibilityPermission.isGranted
+        hotkeyHintItem?.title = "트랙패드: 드래그 중 \(Settings.shared.gridHotkey.displayString)"
     }
 
     @discardableResult
