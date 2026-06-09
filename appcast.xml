@@ -6,17 +6,16 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.4.1</title>
-      <pubDate>Mon, 08 Jun 2026 15:03:33 +0000</pubDate>
-      <sparkle:version>10</sparkle:version>
-      <sparkle:shortVersionString>1.4.1</sparkle:shortVersionString>
+      <title>1.5.0</title>
+      <pubDate>Tue, 09 Jun 2026 10:11:17 +0000</pubDate>
+      <sparkle:version>11</sparkle:version>
+      <sparkle:shortVersionString>1.5.0</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.4.1</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.5.0</h2>
 <ul>
-<li>설정의 그리드 열·행에 **[적용] 버튼** 추가 — 숫자를 고친 뒤 Enter를 누르지 않아도 적용됨(Enter로도 적용 가능).</li>
-<li>창 크기 고정 안내 HUD의 글자 대비 개선 — 반투명 재질을 불투명 진한 배경으로 바꿔 밝은 배경·화면 녹화에서도 또렷하게 보임.</li>
+<li>트랙패드용 그리드 단축키 추가: **⌃⌥G** 를 누르면 커서 아래 창으로 그리드 모드가 켜지고(드래그·우클릭 불필요), 이동해 셀을 고른 뒤 클릭하거나 ⌃⌥G 를 다시 누르면 배치됨(Esc 취소). 기존 "드래그 중 우클릭" 방식은 그대로 유지.</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.4.1/oh-my-grid-1.4.1.zip" type="application/octet-stream" sparkle:edSignature="pXt5WBldRV33+4ji77La5d/d9RAQqMkZjgUNMZclwvMJ/D3iNCWIdLWRiLolpMXRDlAbv0C46Sm8p68fSyabAw==" length="3310726" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.5.0/oh-my-grid-1.5.0.zip" type="application/octet-stream" sparkle:edSignature="umxVntytDrJeC8rVFsTpFxy5UJ6lMWfZaXlDLySexZA+yvTAs9S9XESbp9j49yMOHPWT8DagayRHt4atvuiqAQ==" length="3311499" />
     </item>
   </channel>
 </rss>
