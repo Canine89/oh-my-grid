@@ -58,14 +58,20 @@ enum ScreenGeometry {
                       height: CGFloat(maxRow - minRow + 1) * cellH)
     }
 
+    /// AppKit↔CG y 뒤집기 기준 높이. 두 좌표계 모두 **주 디스플레이**를 원점으로 공유하므로
+    /// 기준은 항상 주 디스플레이 높이다(`screens[0]`은 origin (0,0)인 주 화면).
+    /// 모든 화면의 maxY 최대값을 쓰면 보조 모니터가 주 화면 아래로 내려간 배치에서 그만큼 어긋난다.
+    private static var primaryHeight: CGFloat {
+        NSScreen.screens.first?.frame.maxY ?? 0
+    }
+
     /// 메뉴바·Dock을 제외한 사용 영역을 CG 전역(top-left) 사각형으로 반환.
     /// `NSScreen.visibleFrame`(AppKit bottom-left)을 CG 전역으로 변환한다 → 스냅 창이 메뉴바 밑으로 안 들어감.
     static func cgVisibleBounds(for screen: NSScreen) -> CGRect {
-        let totalHeight = NSScreen.screens.map { CGDisplayBounds($0.displayID).maxY }.max() ?? screen.frame.maxY
         let vf = screen.visibleFrame
         // y 뒤집기: AppKit bottom-left → CG top-left.
         return CGRect(x: vf.minX,
-                      y: totalHeight - vf.maxY,
+                      y: primaryHeight - vf.maxY,
                       width: vf.width,
                       height: vf.height)
     }
@@ -96,12 +102,10 @@ enum ScreenGeometry {
 
     /// CG 전역(top-left) 사각형 → AppKit 전역(bottom-left) 사각형. 오버레이 윈도우 배치용.
     static func appKitRect(fromCG rect: CGRect) -> CGRect {
-        // 모든 화면을 포함하는 전역 높이 기준으로 y를 뒤집는다.
-        let totalHeight = NSScreen.screens.map { CGDisplayBounds($0.displayID).maxY }.max() ?? rect.maxY
-        return CGRect(x: rect.minX,
-                      y: totalHeight - rect.maxY,
-                      width: rect.width,
-                      height: rect.height)
+        CGRect(x: rect.minX,
+               y: primaryHeight - rect.maxY,
+               width: rect.width,
+               height: rect.height)
     }
 
     private static func clamp(_ v: Int, _ lo: Int, _ hi: Int) -> Int {
