@@ -6,18 +6,16 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.6.0</title>
-      <pubDate>Tue, 09 Jun 2026 12:39:22 +0000</pubDate>
-      <sparkle:version>12</sparkle:version>
-      <sparkle:shortVersionString>1.6.0</sparkle:shortVersionString>
+      <title>1.6.1</title>
+      <pubDate>Wed, 10 Jun 2026 12:58:11 +0000</pubDate>
+      <sparkle:version>13</sparkle:version>
+      <sparkle:shortVersionString>1.6.1</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.6.0</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.6.1</h2>
 <ul>
-<li>트랙패드 단축키를 **"드래그 중 입력"** 방식으로 변경: 창을 드래그하는 도중 단축키(기본 ⌃⌥G)를 누르면 우클릭과 똑같이 그리드가 켜지고, 셀을 고른 뒤 손을 떼면 배치됨. (1.5.0의 클릭-커밋 단독 모드는 제거)</li>
-<li>단축키를 **설정에서 변경** 가능: 설정… → 그리드 단축키에서 원하는 조합으로 녹화.</li>
-<li>macOS **시스템·앱 기본 단축키는 지정 불가**: ⌘Space·⌃↑·⇧⌘4·⌘C 등 충돌 위험 단축키를 처음부터 막고, 수정키 없는 키도 거부.</li>
+<li>멀티 모니터 환경에서 그리드가 화면 위쪽 일부를 비워 두고(맨 윗줄 제외) 아래로 밀려 그려지던 문제 수정 — 보조 모니터가 주 모니터보다 아래로 내려간 배치에서 좌표 변환이 어긋나, 그리드 표시·셀 선택·창 스냅 위치가 모두 그만큼 밀리던 버그. 가장자리 절반 스냅·창 크기 고정의 위치 보정에도 동일하게 적용.</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.6.0/oh-my-grid-1.6.0.zip" type="application/octet-stream" sparkle:edSignature="unu83kWoKC9wQ8XcjHmahfT6Dd82yYwDBxIHE/1P8knThSBH+vgvrqJ75PcYTk/Mela2ONcbHMvhpyYGgQXSAA==" length="3323528" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.6.1/oh-my-grid-1.6.1.zip" type="application/octet-stream" sparkle:edSignature="0cU2jxVu17GJmaq+Yuyfg05ap0YbB51jHYvUp1UlkhgMeuEG4JvFZsQXY0iJh3Y5ycNOoJp1D3lshaC/TbP+Cg==" length="3322658" />
     </item>
   </channel>
 </rss>
