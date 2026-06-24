@@ -20,16 +20,24 @@ Windows 에는 **WindowGrid** 라는 훌륭한 창 정렬 도구가 있습니다
 
 ## 📥 설치
 
-1. [**Releases**](../../releases/latest) 에서 `oh-my-grid-x.x.x.dmg` 를 받습니다.
-2. `.dmg` 를 열고 **`oh-my-grid` 아이콘을 `Applications` 폴더로 드래그**합니다.
-3. **처음 한 번만**: 앱을 더블클릭하면 막힐 수 있습니다. 그럴 땐
-   **시스템 설정 → 개인정보 보호 및 보안** 으로 가서 아래쪽의 **`그래도 열기`** 를 누르면 실행됩니다.
-4. 첫 실행 때 뜨는 **손쉬운 사용(접근성) 권한**을 켭니다
+Homebrew로 설치할 수 있습니다.
+
+```sh
+brew install --cask canine89/tap/oh-my-grid
+```
+
+또는 [**Releases**](../../releases/latest) 에서 `oh-my-grid-x.x.x.dmg` 를 받아 직접 설치할 수 있습니다.
+
+1. `.dmg` 를 열고 **`oh-my-grid` 아이콘을 `Applications` 폴더로 드래그**합니다.
+2. `Applications` 폴더에서 `oh-my-grid` 를 실행합니다. 배포용 DMG는 **Apple Developer ID 서명 및 공증**을 거쳤습니다.
+3. 첫 실행 때 뜨는 **손쉬운 사용(접근성) 권한**을 켭니다
    (시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용 → `oh-my-grid` ON). **권한을 켠 뒤 앱을 다시 실행**하세요.
 
 > 그림과 함께 한 단계씩 따라 하려면 👉 [INSTALL.md](INSTALL.md)
 
 설치 후에는 앱이 **자동으로 업데이트를 확인**합니다(Sparkle). 메뉴바 → **업데이트 확인…** 으로 수동 확인도 가능합니다.
+
+> 기존 안내와 달리 최신 릴리스는 공증된 앱이므로 보통 `그래도 열기` 보안 우회가 필요하지 않습니다. macOS가 확인 대화상자를 띄우면 안내에 따라 열면 됩니다.
 
 ---
 
