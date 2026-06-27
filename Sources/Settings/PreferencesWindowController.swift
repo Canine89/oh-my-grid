@@ -199,7 +199,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
         if AccessibilityPermission.isGranted {
             permissionLabel.stringValue = "✅ 손쉬운 사용 권한 허용됨 — 창을 옮길 수 있습니다."
         } else {
-            permissionLabel.stringValue = "⚠️ 손쉬운 사용 권한이 없어 창을 옮길 수 없습니다. 아래 버튼으로 허용한 뒤 앱을 다시 실행하세요."
+            permissionLabel.stringValue = "⚠️ 손쉬운 사용 권한이 없어 창을 옮길 수 없습니다. 아래 버튼으로 권한을 허용하세요."
         }
     }
 

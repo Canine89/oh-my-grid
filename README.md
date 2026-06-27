@@ -31,7 +31,7 @@ brew install --cask canine89/tap/oh-my-grid
 1. `.dmg` 를 열고 **`oh-my-grid` 아이콘을 `Applications` 폴더로 드래그**합니다.
 2. `Applications` 폴더에서 `oh-my-grid` 를 실행합니다. 배포용 DMG는 **Apple Developer ID 서명 및 공증**을 거쳤습니다.
 3. 첫 실행 때 뜨는 **손쉬운 사용(접근성) 권한**을 켭니다
-   (시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용 → `oh-my-grid` ON). **권한을 켠 뒤 앱을 다시 실행**하세요.
+   (시스템 설정 → 개인정보 보호 및 보안 → 손쉬운 사용 → `oh-my-grid` ON). 권한을 켠 뒤 잠시 기다리면 바로 동작합니다.
 
 > 그림과 함께 한 단계씩 따라 하려면 👉 [INSTALL.md](INSTALL.md)
 

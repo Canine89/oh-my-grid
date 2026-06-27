@@ -2,6 +2,7 @@ import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var menuBar: MenuBarController?
+    private var permissionTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupMainMenu()
@@ -11,11 +12,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ActiveAppMonitor.shared.start()
 
         // 손쉬운 사용(접근성) 권한 확인 → 이벤트 탭 시작.
-        // 권한이 없으면 prompt를 띄우고 안내한다. 권한 부여 후 앱 재실행이 필요하다.
+        // 권한이 없으면 prompt를 띄우고, 허용되는 즉시 이벤트 탭 설치를 재시도한다.
         if AccessibilityPermission.isGranted {
             MouseEventTap.shared.start()
         } else {
             AccessibilityPermission.request()   // 시스템 prompt 유도
+            startPermissionWatcher()
             if MouseEventTap.shared.start() == false {
                 PermissionAlert.show()
             }
@@ -26,8 +28,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        permissionTimer?.invalidate()
         MouseEventTap.shared.stop()
         ActiveAppMonitor.shared.stop()
+    }
+
+    private func startPermissionWatcher() {
+        permissionTimer?.invalidate()
+        let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self] timer in
+            MainActor.assumeIsolated {
+                guard AccessibilityPermission.isGranted else { return }
+                if MouseEventTap.shared.start() {
+                    glog("손쉬운 사용 권한 허용 감지 → 이벤트 탭 시작")
+                    timer.invalidate()
+                    self?.permissionTimer = nil
+                }
+            }
+        }
+        permissionTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
     }
 
     /// 표준 Edit 메뉴(⌘C 등)를 둔다.

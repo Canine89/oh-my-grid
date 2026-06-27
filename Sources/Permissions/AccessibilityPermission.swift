@@ -33,7 +33,7 @@ enum PermissionAlert {
         alert.messageText = "손쉬운 사용(접근성) 권한이 필요합니다"
         alert.informativeText = """
         \(Brand.name)가 다른 앱의 창을 그리드에 맞춰 옮기려면 시스템 설정에서 권한을 허용해야 합니다.
-        '개인정보 보호 및 보안 → 손쉬운 사용' 목록에서 \(Brand.name)을 켠 뒤 앱을 다시 실행해 주세요.
+        '개인정보 보호 및 보안 → 손쉬운 사용' 목록에서 \(Brand.name)을 켜 주세요.
         """
         alert.alertStyle = .informational
         alert.addButton(withTitle: "설정 열기")
