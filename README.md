@@ -39,6 +39,20 @@ brew install --cask canine89/tap/oh-my-grid
 
 > 기존 안내와 달리 최신 릴리스는 공증된 앱이므로 보통 `그래도 열기` 보안 우회가 필요하지 않습니다. macOS가 확인 대화상자를 띄우면 안내에 따라 열면 됩니다.
 
+### 삭제
+
+Homebrew로 설치했다면 아래 명령으로 삭제할 수 있습니다.
+
+```sh
+brew uninstall --cask oh-my-grid
+```
+
+설정과 캐시까지 지우는 클린 삭제는 아래 명령을 사용하세요.
+
+```sh
+brew uninstall --cask --zap oh-my-grid
+```
+
 ---
 
 ## ✨ 사용법
