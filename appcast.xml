@@ -6,16 +6,16 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.6.2</title>
-      <pubDate>Sat, 27 Jun 2026 14:50:59 +0000</pubDate>
-      <sparkle:version>14</sparkle:version>
-      <sparkle:shortVersionString>1.6.2</sparkle:shortVersionString>
+      <title>1.6.3</title>
+      <pubDate>Tue, 30 Jun 2026 17:12:46 +0000</pubDate>
+      <sparkle:version>15</sparkle:version>
+      <sparkle:shortVersionString>1.6.3</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.6.2</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.6.3</h2>
 <ul>
-<li>최초 설치 후 손쉬운 사용(접근성) 권한을 켜도 앱을 껐다 켜기 전까지 그리드가 동작하지 않던 문제 수정 — 권한 허용 상태를 감지해 이벤트 탭을 자동으로 다시 시작합니다.</li>
+<li>설정에 **로그인 시 자동 실행** 옵션 추가 — macOS 로그인 항목에 등록해 재시작 후에도 메뉴 막대에서 자동으로 실행됩니다.</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.6.2/oh-my-grid-1.6.2.zip" type="application/octet-stream" sparkle:edSignature="KcuLj5RD66sHgXoRuEN2XSOW53x7lg+DnCS8sQFKTWsA4GtJLOXbvwh87tVWEq2Jvdw8GqUeXE26MGsxYmQqBA==" length="3362511" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.6.3/oh-my-grid-1.6.3.zip" type="application/octet-stream" sparkle:edSignature="KBfO0+85fMNSnNNQ3UU5zwWATz3+xcFKFhvyKwKYafwBkCKuu2sU4WGRp/h9Kx6p/sg+zGDCB/rWcLScDPtKDA==" length="3363794" />
     </item>
   </channel>
 </rss>
