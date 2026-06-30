@@ -8,6 +8,8 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
 
     private let enabledCheck = NSButton(checkboxWithTitle: "그리드 제스처 활성화", target: nil, action: nil)
     private let edgeSnapCheck = NSButton(checkboxWithTitle: "가장자리 절반 스냅 (창을 화면 끝으로 드래그)", target: nil, action: nil)
+    private let launchAtLoginCheck = NSButton(checkboxWithTitle: "로그인 시 자동 실행", target: nil, action: nil)
+    private let launchAtLoginLabel = NSTextField(labelWithString: "")
     private let colsField = NSTextField()
     private let colsStepper = NSStepper()
     private let rowsField = NSTextField()
@@ -26,7 +28,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
     }
 
     private func build() {
-        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 660),
+        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 380, height: 720),
                            styleMask: [.titled, .closable],
                            backing: .buffered, defer: false)
         win.title = "\(Brand.name) 설정"
@@ -49,6 +51,18 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
         edgeSnapCheck.target = self
         edgeSnapCheck.action = #selector(toggleEdgeSnap)
         stack.addArrangedSubview(edgeSnapCheck)
+
+        // 로그인 시 자동 실행
+        launchAtLoginCheck.target = self
+        launchAtLoginCheck.action = #selector(toggleLaunchAtLogin)
+        stack.addArrangedSubview(launchAtLoginCheck)
+
+        launchAtLoginLabel.font = .systemFont(ofSize: 11)
+        launchAtLoginLabel.textColor = .secondaryLabelColor
+        launchAtLoginLabel.lineBreakMode = .byWordWrapping
+        launchAtLoginLabel.maximumNumberOfLines = 2
+        launchAtLoginLabel.preferredMaxLayoutWidth = 340
+        stack.addArrangedSubview(launchAtLoginLabel)
 
         // 열
         stack.addArrangedSubview(makeStepperRow(title: "열 (가로 칸 수)",
@@ -191,6 +205,8 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
     private func refresh() {
         enabledCheck.state = Settings.shared.enabled ? .on : .off
         edgeSnapCheck.state = Settings.shared.edgeSnapEnabled ? .on : .off
+        launchAtLoginCheck.state = LoginItemController.isEnabled ? .on : .off
+        launchAtLoginLabel.stringValue = LoginItemController.statusMessage
         colsField.integerValue = Settings.shared.columns
         colsStepper.integerValue = Settings.shared.columns
         rowsField.integerValue = Settings.shared.rows
@@ -211,6 +227,19 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
     @objc private func toggleEdgeSnap() {
         Settings.shared.edgeSnapEnabled = (edgeSnapCheck.state == .on)
         notifyChanged()
+    }
+
+    @objc private func toggleLaunchAtLogin() {
+        let enabled = (launchAtLoginCheck.state == .on)
+        do {
+            try LoginItemController.setEnabled(enabled)
+        } catch {
+            launchAtLoginCheck.state = LoginItemController.isEnabled ? .on : .off
+            launchAtLoginLabel.stringValue = "⚠️ 로그인 항목 변경 실패: \(error.localizedDescription)"
+            LoginItemController.openLoginItemsSettings()
+            return
+        }
+        refresh()
     }
 
     @objc private func colsChanged(_ sender: NSControl) {
