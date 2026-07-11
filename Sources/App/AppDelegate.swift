@@ -12,15 +12,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ActiveAppMonitor.shared.start()
 
         // 손쉬운 사용(접근성) 권한 확인 → 이벤트 탭 시작.
-        // 권한이 없으면 prompt를 띄우고, 허용되는 즉시 이벤트 탭 설치를 재시도한다.
+        // 권한이 없으면 최초 실행에서만 prompt를 띄우고, 허용되는 즉시 이벤트 탭
+        // 설치를 재시도한다. 매 실행마다 prompt를 요청하면 macOS의 TCC 반영이 늦을
+        // 때 같은 안내가 반복될 수 있다.
         if AccessibilityPermission.isGranted {
             MouseEventTap.shared.start()
         } else {
-            AccessibilityPermission.request()   // 시스템 prompt 유도
+            AccessibilityPermission.requestOnce()
             startPermissionWatcher()
-            if MouseEventTap.shared.start() == false {
-                PermissionAlert.show()
-            }
         }
 
         // Sparkle 업데이터 기동.

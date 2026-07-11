@@ -7,6 +7,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     private var enabledItem: NSMenuItem?
     private var permissionItem: NSMenuItem?
     private var hotkeyHintItem: NSMenuItem?
+    private var updateItem: NSMenuItem?
 
     override init() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -53,6 +54,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
                                     keyEquivalent: "")
         updateItem.target = UpdaterController.shared
         menu.addItem(updateItem)
+        self.updateItem = updateItem
 
         // 권한 미허용 시에만 보이는 안내 항목.
         let perm = addItem(to: menu, title: "손쉬운 사용 권한 허용…", action: #selector(openAccessibility))
@@ -68,6 +70,10 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         enabledItem?.state = Settings.shared.enabled ? .on : .off
         permissionItem?.isHidden = AccessibilityPermission.isGranted
         hotkeyHintItem?.title = "트랙패드: 드래그 중 \(Settings.shared.gridHotkey.displayString)"
+        let updater = UpdaterController.shared
+        updateItem?.title = updater.lastFailure == nil ? "업데이트 확인…" : "업데이트 다시 시도…"
+        updateItem?.isEnabled = updater.lastFailure != nil || updater.canCheckForUpdates
+        updateItem?.toolTip = updater.lastFailure?.localizedDescription
     }
 
     @discardableResult
