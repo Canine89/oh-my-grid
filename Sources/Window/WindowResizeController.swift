@@ -34,11 +34,13 @@ final class WindowResizeController {
     /// 메뉴에서 프리셋 선택 → 다음 창 클릭을 기다린다.
     func arm(size: CGSize, label: String) {
         guard AccessibilityPermission.isGranted else {
-            AccessibilityPermission.openSystemSettings()
+            PermissionNotice.showDenied()
+            AccessibilityPermission.requestAndOpenSettings()
             return
         }
         pendingSize = size
         hoveredWindow = nil
+        MouseEventTap.shared.setTracksMouseMoved(true)
         showHUD(text: "크기 바꿀 창을 클릭하세요 — \(label)   (Esc 취소)")
         glog("창 크기 고정 무장 \(Int(size.width))x\(Int(size.height))")
     }
@@ -48,6 +50,7 @@ final class WindowResizeController {
         pendingSize = nil
         hoveredWindow = nil
         hoverToken &+= 1
+        MouseEventTap.shared.setTracksMouseMoved(false)
         hideHUD()
         hideHighlight()
     }

@@ -57,7 +57,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         self.updateItem = updateItem
 
         // 권한 미허용 시에만 보이는 안내 항목.
-        let perm = addItem(to: menu, title: "손쉬운 사용 권한 허용…", action: #selector(openAccessibility))
+        let perm = addItem(to: menu, title: "손쉬운 사용 권한 다시 요청…", action: #selector(openAccessibility))
         permissionItem = perm
 
         menu.addItem(.separator())
@@ -100,7 +100,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     }
 
     @objc private func openAccessibility() {
-        AccessibilityPermission.openSystemSettings()
+        AccessibilityPermission.requestAndOpenSettings()
     }
 
     @objc private func quit() {

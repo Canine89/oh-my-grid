@@ -56,7 +56,11 @@ final class GridSessionController {
     func arm(at point: CGPoint) -> Bool {
         guard !isArmed else { return false }
         guard Settings.shared.enabled else { glog("arm 실패: 그리드 비활성"); return false }
-        guard AccessibilityPermission.isGranted else { glog("arm 실패: 접근성 권한 없음"); return false }
+        guard AccessibilityPermission.isGranted else {
+            glog("arm 실패: 접근성 권한 없음")
+            PermissionNotice.showDenied()
+            return false
+        }
         guard let window = AXWindowController.shared.windowUnderCursor(cgPoint: point) else {
             glog("arm 실패: 커서 아래 창을 못 찾음 @\(Int(point.x)),\(Int(point.y))")
             return false

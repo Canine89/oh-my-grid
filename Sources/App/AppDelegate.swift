@@ -3,6 +3,9 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var menuBar: MenuBarController?
     private var permissionTimer: Timer?
+    private var permissionWatchDeadline: Date?
+    /// 거부/미허용 상태에서 무한정 폴링하지 않도록 상한(초).
+    private let permissionWatchMaxDuration: TimeInterval = 300
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupMainMenu()
@@ -10,6 +13,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // 맨 앞 앱 추적 시작(예외 목록 판정용).
         ActiveAppMonitor.shared.start()
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handlePermissionWatchRequested),
+            name: .accessibilityPermissionWatchRequested,
+            object: nil
+        )
 
         // 손쉬운 사용(접근성) 권한 확인 → 이벤트 탭 시작.
         // 권한이 없으면 최초 실행에서만 prompt를 띄우고, 허용되는 즉시 이벤트 탭
@@ -32,15 +42,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ActiveAppMonitor.shared.stop()
     }
 
+    @objc private func handlePermissionWatchRequested() {
+        MainActor.assumeIsolated {
+            guard !AccessibilityPermission.isGranted else {
+                _ = MouseEventTap.shared.start()
+                return
+            }
+            startPermissionWatcher()
+        }
+    }
+
     private func startPermissionWatcher() {
         permissionTimer?.invalidate()
+        permissionWatchDeadline = Date().addingTimeInterval(permissionWatchMaxDuration)
         let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self] timer in
             MainActor.assumeIsolated {
+                guard let self else {
+                    timer.invalidate()
+                    return
+                }
+                if let deadline = self.permissionWatchDeadline, Date() >= deadline {
+                    glog("권한 대기 watcher 타임아웃 — 폴링 중지(메뉴에서 다시 요청 가능)")
+                    timer.invalidate()
+                    self.permissionTimer = nil
+                    self.permissionWatchDeadline = nil
+                    return
+                }
                 guard AccessibilityPermission.isGranted else { return }
                 if MouseEventTap.shared.start() {
                     glog("손쉬운 사용 권한 허용 감지 → 이벤트 탭 시작")
                     timer.invalidate()
-                    self?.permissionTimer = nil
+                    self.permissionTimer = nil
+                    self.permissionWatchDeadline = nil
+                    AccessibilityPermission.notifyStatusChanged()
                 }
             }
         }

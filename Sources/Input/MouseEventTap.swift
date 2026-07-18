@@ -16,21 +16,38 @@ final class MouseEventTap {
     private var consumedRightDown = false
     /// 창 크기 고정 클릭(down)을 소비했으면 짝이 되는 up도 소비.
     private var consumedResizeDown = false
+    /// 창 크기 고정 호버 미리보기용. armed일 때만 mouseMoved를 탭 마스크에 넣는다.
+    private var tracksMouseMoved = false
 
     /// 앱 시작 시 1회 호출 — 탭 설치. 권한이 없으면 false.
     @discardableResult
     func start() -> Bool {
         guard tap == nil else { return true }
+        return installTap()
+    }
 
-        let mask: CGEventMask =
+    /// 창 크기 고정 호버가 필요할 때만 mouseMoved를 구독해 평상시 콜백 부담을 줄인다.
+    func setTracksMouseMoved(_ enabled: Bool) {
+        guard tracksMouseMoved != enabled else { return }
+        tracksMouseMoved = enabled
+        guard tap != nil else { return }
+        stop()
+        _ = installTap()
+    }
+
+    @discardableResult
+    private func installTap() -> Bool {
+        var mask: CGEventMask =
             (1 << CGEventType.leftMouseDown.rawValue) |
             (1 << CGEventType.leftMouseUp.rawValue) |
             (1 << CGEventType.leftMouseDragged.rawValue) |
             (1 << CGEventType.rightMouseDown.rawValue) |
             (1 << CGEventType.rightMouseUp.rawValue) |
             (1 << CGEventType.rightMouseDragged.rawValue) |
-            (1 << CGEventType.mouseMoved.rawValue) |
             (1 << CGEventType.keyDown.rawValue)
+        if tracksMouseMoved {
+            mask |= (1 << CGEventType.mouseMoved.rawValue)
+        }
 
         guard let machPort = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
@@ -49,7 +66,7 @@ final class MouseEventTap {
         CGEvent.tapEnable(tap: machPort, enable: true)
         tap = machPort
         runLoopSource = source
-        glog("이벤트 탭 생성 성공 (isTrusted=\(AccessibilityPermission.isGranted), enabled=\(Settings.shared.enabled))")
+        glog("이벤트 탭 생성 성공 (isTrusted=\(AccessibilityPermission.isGranted), enabled=\(Settings.shared.enabled), mouseMoved=\(tracksMouseMoved))")
         return true
     }
 

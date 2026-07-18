@@ -37,11 +37,40 @@ enum AccessibilityPermission {
         return request()
     }
 
+    /// 사용자가 메뉴/설정에서 복구할 때: 시스템 prompt를 다시 띄운 뒤 설정 패널을 연다.
+    /// 앱이 손쉬운 사용 목록에 안 보이는 경우에도 prompt가 등록을 유도한다.
+    @discardableResult
+    static func requestAndOpenSettings() -> Bool {
+        let granted = request()
+        openSystemSettings()
+        NotificationCenter.default.post(name: .accessibilityPermissionWatchRequested, object: nil)
+        notifyStatusChanged()
+        return granted
+    }
+
     /// 시스템 설정의 "손쉬운 사용(접근성)" 패널을 연다.
+    /// Tahoe의 System Settings URL을 먼저 시도하고, 실패 시 레거시 System Preferences URL로 폴백한다.
     static func openSystemSettings() {
-        let urlString = "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
-        if let url = URL(string: urlString) {
-            NSWorkspace.shared.open(url)
+        let candidates = [
+            "x-apple.systemsettings:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility",
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
+        ]
+        for string in candidates {
+            guard let url = URL(string: string) else { continue }
+            if NSWorkspace.shared.open(url) { return }
         }
     }
+
+    static func notifyStatusChanged() {
+        NotificationCenter.default.post(name: .accessibilityPermissionChanged, object: nil)
+    }
+}
+
+extension Notification.Name {
+    /// 손쉬운 사용 권한 상태가 바뀌었거나 UI가 다시 확인해야 할 때.
+    static let accessibilityPermissionChanged =
+        Notification.Name("com.goldenrabbit.ohmygrid.accessibilityPermissionChanged")
+    /// 사용자가 권한을 다시 요청함 → 허용 감지 watcher를 (재)시작해야 함.
+    static let accessibilityPermissionWatchRequested =
+        Notification.Name("com.goldenrabbit.ohmygrid.accessibilityPermissionWatchRequested")
 }

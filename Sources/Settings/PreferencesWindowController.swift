@@ -5,6 +5,8 @@ import UniformTypeIdentifiers
 @MainActor
 final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableViewDataSource, NSTableViewDelegate {
     private var window: NSWindow?
+    private var permissionRefreshTimer: Timer?
+    private var observingPermission = false
 
     private let enabledCheck = NSButton(checkboxWithTitle: "그리드 제스처 활성화", target: nil, action: nil)
     private let edgeSnapCheck = NSButton(checkboxWithTitle: "가장자리 절반 스냅 (창을 화면 끝으로 드래그)", target: nil, action: nil)
@@ -15,12 +17,14 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
     private let rowsField = NSTextField()
     private let rowsStepper = NSStepper()
     private let permissionLabel = NSTextField(labelWithString: "")
+    private let permissionButton = NSButton(title: "손쉬운 사용 권한 다시 요청…", target: nil, action: nil)
     private let exclusionTable = NSTableView()
     private var hotkeyRecorder: ShortcutRecorderView?
     private let hotkeyError = NSTextField(labelWithString: "")
 
     func showWindow() {
         if window == nil { build() }
+        startPermissionObservers()
         refresh()
         window?.center()
         window?.makeKeyAndOrderFront(nil)
@@ -153,10 +157,10 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
         permissionLabel.preferredMaxLayoutWidth = 340
         stack.addArrangedSubview(permissionLabel)
 
-        let permBtn = NSButton(title: "손쉬운 사용 설정 열기…", target: self,
-                               action: #selector(openAccessibility))
-        permBtn.bezelStyle = .rounded
-        stack.addArrangedSubview(permBtn)
+        permissionButton.target = self
+        permissionButton.action = #selector(openAccessibility)
+        permissionButton.bezelStyle = .rounded
+        stack.addArrangedSubview(permissionButton)
 
         let hint = NSTextField(wrappingLabelWithString:
             "사용법: 창을 드래그하는 도중 오른쪽 버튼을 한 번 클릭하면 그리드가 켜집니다. 그대로 셀을 가로질러 움직인 뒤 왼쪽 버튼을 놓으면 창이 스냅됩니다. (다시 우클릭하거나 Esc로 취소)\n가장자리 스냅: 창을 화면 좌·우·아래 끝으로 끌면 절반, 위 끝으로 끌면 최대화됩니다.\n게임처럼 드래그·우클릭을 쓰는 앱은 위 목록에 추가하면 그 앱에서는 제스처가 동작하지 않습니다.\n트랙패드: 창을 드래그하는 도중 위 단축키(기본 ⌃⌥G)를 누르면 우클릭처럼 그리드가 켜집니다.")
@@ -214,9 +218,48 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
         exclusionTable.reloadData()
         if AccessibilityPermission.isGranted {
             permissionLabel.stringValue = "✅ 손쉬운 사용 권한 허용됨 — 창을 옮길 수 있습니다."
+            permissionButton.title = "손쉬운 사용 설정 열기…"
+            stopPermissionPoll()
         } else {
-            permissionLabel.stringValue = "⚠️ 손쉬운 사용 권한이 없어 창을 옮길 수 없습니다. 아래 버튼으로 권한을 허용하세요."
+            permissionLabel.stringValue = "⚠️ 손쉬운 사용 권한이 없어 창을 옮길 수 없습니다. 아래 버튼으로 권한을 다시 요청하세요."
+            permissionButton.title = "손쉬운 사용 권한 다시 요청…"
+            startPermissionPollIfNeeded()
         }
+    }
+
+    private func startPermissionObservers() {
+        guard !observingPermission else { return }
+        observingPermission = true
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(permissionStatusPossiblyChanged),
+            name: .accessibilityPermissionChanged,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(permissionStatusPossiblyChanged),
+            name: NSApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+
+    private func startPermissionPollIfNeeded() {
+        guard permissionRefreshTimer == nil, !AccessibilityPermission.isGranted else { return }
+        let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.refresh() }
+        }
+        permissionRefreshTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    private func stopPermissionPoll() {
+        permissionRefreshTimer?.invalidate()
+        permissionRefreshTimer = nil
+    }
+
+    @objc private func permissionStatusPossiblyChanged() {
+        refresh()
     }
 
     @objc private func toggleEnabled() {
@@ -276,7 +319,13 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
     }
 
     @objc private func openAccessibility() {
-        AccessibilityPermission.openSystemSettings()
+        if AccessibilityPermission.isGranted {
+            AccessibilityPermission.openSystemSettings()
+        } else {
+            AccessibilityPermission.requestAndOpenSettings()
+            startPermissionPollIfNeeded()
+        }
+        refresh()
     }
 
     // MARK: - 예외 앱 목록
@@ -331,7 +380,11 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
         NotificationCenter.default.post(name: .gridSettingsChanged, object: nil)
     }
 
+    func windowDidBecomeKey(_ notification: Notification) {
+        refresh()
+    }
+
     func windowWillClose(_ notification: Notification) {
-        // 닫을 때 권한 상태를 다시 반영할 수 있게 참조 유지(release 안 함).
+        stopPermissionPoll()
     }
 }
