@@ -11,6 +11,11 @@ enum AccessibilityPermission {
         AXIsProcessTrusted()
     }
 
+    /// 이전 실행에서 자동 prompt를 이미 요청했는지 (requestOnce가 다시 뜨지 않는 상태인지).
+    static var hasRequestedBefore: Bool {
+        UserDefaults.standard.bool(forKey: requestRecordedKey)
+    }
+
     /// 시스템 권한 prompt를 띄운다. 사용자가 결정하기 전이면 false를 반환할 수 있다.
     @discardableResult
     static func request() -> Bool {

@@ -220,6 +220,8 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate, NSTableView
             permissionLabel.stringValue = "✅ 손쉬운 사용 권한 허용됨 — 창을 옮길 수 있습니다."
             permissionButton.title = "손쉬운 사용 설정 열기…"
             stopPermissionPoll()
+            // 권한 watcher 타임아웃 이후 뒤늦게 허용된 경우에도 탭을 복구한다(이미 있으면 no-op).
+            _ = MouseEventTap.shared.start()
         } else {
             permissionLabel.stringValue = "⚠️ 손쉬운 사용 권한이 없어 창을 옮길 수 없습니다. 아래 버튼으로 권한을 다시 요청하세요."
             permissionButton.title = "손쉬운 사용 권한 다시 요청…"

@@ -68,7 +68,10 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     // 메뉴를 열 때마다 토글 체크/권한 항목 상태를 갱신.
     func menuWillOpen(_ menu: NSMenu) {
         enabledItem?.state = Settings.shared.enabled ? .on : .off
-        permissionItem?.isHidden = AccessibilityPermission.isGranted
+        let granted = AccessibilityPermission.isGranted
+        permissionItem?.isHidden = granted
+        // 권한 watcher 타임아웃 이후 뒤늦게 허용된 경우: 메뉴만 열어도 탭을 복구한다(이미 있으면 no-op).
+        if granted { _ = MouseEventTap.shared.start() }
         hotkeyHintItem?.title = "트랙패드: 드래그 중 \(Settings.shared.gridHotkey.displayString)"
         let updater = UpdaterController.shared
         updateItem?.title = updater.lastFailure == nil ? "업데이트 확인…" : "업데이트 다시 시도…"

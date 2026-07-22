@@ -32,7 +32,11 @@ final class MouseEventTap {
         tracksMouseMoved = enabled
         guard tap != nil else { return }
         stop()
-        _ = installTap()
+        if !installTap() {
+            // 마스크 변경 중 권한이 회수되면 탭이 유실된 채 남는다 → 허용 감지 watcher로 복구.
+            glog("mouseMoved 마스크 변경 중 탭 재설치 실패 → 권한 watcher 요청")
+            NotificationCenter.default.post(name: .accessibilityPermissionWatchRequested, object: nil)
+        }
     }
 
     @discardableResult

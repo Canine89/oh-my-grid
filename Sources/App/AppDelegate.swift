@@ -26,9 +26,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // 설치를 재시도한다. 매 실행마다 prompt를 요청하면 macOS의 TCC 반영이 늦을
         // 때 같은 안내가 반복될 수 있다.
         if AccessibilityPermission.isGranted {
-            MouseEventTap.shared.start()
+            if !MouseEventTap.shared.start() {
+                // AXIsProcessTrusted는 true인데 탭 생성이 실패하는 TCC 반영 지연
+                // (업데이트/재서명 직후)에서는 watcher가 성공할 때까지 재시도한다.
+                glog("권한 허용 상태에서 이벤트 탭 설치 실패 → watcher로 재시도")
+                startPermissionWatcher()
+            }
         } else {
+            let isFirstRequest = !AccessibilityPermission.hasRequestedBefore
             AccessibilityPermission.requestOnce()
+            if !isFirstRequest {
+                // 재실행인데 여전히 권한이 없으면 시스템 prompt는 다시 뜨지 않는다.
+                // 메뉴바 앱이라 조용히 죽은 것처럼 보이지 않도록 복구 방법을 안내한다.
+                PermissionNotice.showDenied()
+            }
             startPermissionWatcher()
         }
 
@@ -44,10 +55,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func handlePermissionWatchRequested() {
         MainActor.assumeIsolated {
-            guard !AccessibilityPermission.isGranted else {
-                _ = MouseEventTap.shared.start()
-                return
-            }
+            // 권한이 있어도 탭 설치가 실패할 수 있다(TCC 반영 지연) → 실패 시에도 watcher로 재시도.
+            if AccessibilityPermission.isGranted, MouseEventTap.shared.start() { return }
             startPermissionWatcher()
         }
     }
