@@ -94,8 +94,10 @@ final class GridSessionController {
         win.gridView.displayBounds = displayBounds
         win.gridView.columns = cols
         win.gridView.rows = rows
+        win.gridView.rebuildGrid()
         win.gridView.selection = currentSelectionRect()
-        win.orderFrontRegardless()
+        win.gridView.label = gridSelectionLabel()
+        win.fadeIn()
         overlay = win
 
         isArmed = true
@@ -111,6 +113,7 @@ final class GridSessionController {
                                       cols: Settings.shared.columns,
                                       rows: Settings.shared.rows)
         overlay?.gridView.selection = currentSelectionRect()
+        overlay?.gridView.label = gridSelectionLabel()
         startWatchdog()   // 입력이 있으면 워치독 리셋
     }
 
@@ -219,7 +222,7 @@ final class GridSessionController {
         edgeDisplayBounds = display.bounds
         edgeUsable = ScreenGeometry.cgVisibleBounds(for: screen)
         let target = applyGaps(ScreenGeometry.rect(for: zone, usable: edgeUsable), within: edgeUsable)
-        showEdgePreview(rect: target, screen: screen, displayBounds: display.bounds)
+        showEdgePreview(rect: target, zone: zone, screen: screen, displayBounds: display.bounds)
         currentZone = zone
     }
 
@@ -234,7 +237,7 @@ final class GridSessionController {
         clearEdgeDrag()
     }
 
-    private func showEdgePreview(rect: CGRect, screen: NSScreen, displayBounds: CGRect) {
+    private func showEdgePreview(rect: CGRect, zone: ScreenGeometry.EdgeZone, screen: NSScreen, displayBounds: CGRect) {
         // 디스플레이가 바뀌었으면(원점 불일치) 기존 오버레이를 버리고 새로 만든다.
         if let win = overlay, win.gridView.cgOrigin != displayBounds.origin { teardownOverlay() }
         if overlay == nil {
@@ -242,10 +245,12 @@ final class GridSessionController {
             win.gridView.previewOnly = true
             win.gridView.cgOrigin = displayBounds.origin
             win.gridView.displayBounds = displayBounds
-            win.orderFrontRegardless()
+            win.gridView.rebuildGrid()
+            win.fadeIn()
             overlay = win
         }
         overlay?.gridView.selection = rect
+        overlay?.gridView.label = edgeLabel(zone: zone, size: rect.size)
     }
 
     private func hideEdgePreview() {
@@ -276,6 +281,25 @@ final class GridSessionController {
                                  rows: Settings.shared.rows)
     }
 
+    /// 그리드 모드 라벨: "3 × 2 · 1280 × 720" (셀 수 · 실제 스냅될 창 크기, 여백 반영).
+    private func gridSelectionLabel() -> String {
+        let cells = (w: abs(current.col - anchor.col) + 1, h: abs(current.row - anchor.row) + 1)
+        let size = applyGaps(currentSelectionRect()).size
+        return "\(cells.w) × \(cells.h)  ·  \(Int(size.width)) × \(Int(size.height))"
+    }
+
+    /// 가장자리 스냅 미리보기 라벨: "왼쪽 절반 · 1280 × 1415".
+    private func edgeLabel(zone: ScreenGeometry.EdgeZone, size: CGSize) -> String {
+        let name: String
+        switch zone {
+        case .left: name = "왼쪽 절반"
+        case .right: name = "오른쪽 절반"
+        case .bottom: name = "아래 절반"
+        case .top: name = "최대화"
+        }
+        return "\(name)  ·  \(Int(size.width)) × \(Int(size.height))"
+    }
+
     /// 바깥 여백/안쪽 간격 적용. (그리드 셀은 displayBounds 기준)
     private func applyGaps(_ rect: CGRect) -> CGRect {
         applyGaps(rect, within: displayBounds)
@@ -297,7 +321,7 @@ final class GridSessionController {
     private func teardownOverlay() {
         watchdog?.invalidate()
         watchdog = nil
-        overlay?.orderOut(nil)
+        overlay?.fadeOut()   // 완료 후 스스로 orderOut — 참조는 지금 놓아도 된다.
         overlay = nil
         displayBounds = .zero
         targetWindow = nil
