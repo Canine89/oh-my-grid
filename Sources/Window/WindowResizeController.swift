@@ -14,11 +14,28 @@ final class WindowResizeController {
         let label: String
         let size: CGSize
     }
-    static let presets: [Preset] = [
-        Preset(label: "4:3 · 720 × 480",    size: CGSize(width: 720,  height: 480)),
-        Preset(label: "16:9 · 1280 × 720",  size: CGSize(width: 1280, height: 720)),
-        Preset(label: "16:9 · 1920 × 1080", size: CGSize(width: 1920, height: 1080)),
+    /// 메뉴에 섹션으로 나뉘어 표시되는 프리셋 그룹. `title`은 비활성 헤더 항목으로 보인다.
+    struct PresetGroup {
+        let title: String
+        let presets: [Preset]
+    }
+    static let presetGroups: [PresetGroup] = [
+        PresetGroup(title: "영상", presets: [
+            Preset(label: "4:3 · 720 × 480",    size: CGSize(width: 720,  height: 480)),
+            Preset(label: "16:9 · 1280 × 720",  size: CGSize(width: 1280, height: 720)),
+            Preset(label: "16:9 · 1920 × 1080", size: CGSize(width: 1920, height: 1080)),
+        ]),
+        // Mac App Store 스크린샷 요구 해상도(16:10, 픽셀 기준).
+        // 창 크기는 포인트라서 Retina(2x) 디스플레이에서는 1280×800 창이 2560×1600 픽셀로 캡처된다.
+        PresetGroup(title: "App Store 스크린샷 (Mac · 16:10)", presets: [
+            Preset(label: "1280 × 800  (Retina 캡처 → 2560 × 1600)", size: CGSize(width: 1280, height: 800)),
+            Preset(label: "1440 × 900  (Retina 캡처 → 2880 × 1800)", size: CGSize(width: 1440, height: 900)),
+            Preset(label: "2560 × 1600", size: CGSize(width: 2560, height: 1600)),
+            Preset(label: "2880 × 1800", size: CGSize(width: 2880, height: 1800)),
+        ]),
     ]
+    /// 그룹을 평탄화한 목록. 메뉴 항목 `tag`가 이 배열의 인덱스다.
+    static let presets: [Preset] = presetGroups.flatMap(\.presets)
 
     private(set) var pendingSize: CGSize?
     var isArmed: Bool { pendingSize != nil }
@@ -99,7 +116,12 @@ final class WindowResizeController {
         var rect = CGRect(origin: origin, size: size)
         if let display = ScreenGeometry.displayContaining(cgPoint: point),
            let screen = ScreenGeometry.screen(for: display.id) {
-            rect = clamp(rect, within: ScreenGeometry.cgVisibleBounds(for: screen))
+            let usable = ScreenGeometry.cgVisibleBounds(for: screen)
+            rect = clamp(rect, within: usable)
+            // 화면 사용 영역보다 큰 프리셋(App Store 2560×1600 등)은 앱이 창을 그 크기로 못 늘린다 → 안내.
+            if size.width > usable.width || size.height > usable.height {
+                PermissionNotice.show(text: "이 화면 사용 영역(\(Int(usable.width)) × \(Int(usable.height)))보다 커서 \(Int(size.width)) × \(Int(size.height))로 맞추지 못할 수 있습니다")
+            }
         }
         AXWindowController.shared.setFrame(rect, for: window)
         glog("창 크기 고정 적용 \(Int(size.width))x\(Int(size.height)) → \(rs(rect))")

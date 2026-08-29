@@ -31,11 +31,20 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         // 창 크기 고정: 비율 선택 → 바꿀 창 클릭.
         let resizeItem = NSMenuItem(title: "창 크기 고정", action: nil, keyEquivalent: "")
         let resizeMenu = NSMenu()
-        for (i, preset) in WindowResizeController.presets.enumerated() {
-            let it = NSMenuItem(title: preset.label, action: #selector(armResize(_:)), keyEquivalent: "")
-            it.target = self
-            it.tag = i
-            resizeMenu.addItem(it)
+        var tag = 0
+        for (gi, group) in WindowResizeController.presetGroups.enumerated() {
+            if gi > 0 { resizeMenu.addItem(.separator()) }
+            let header = NSMenuItem(title: group.title, action: nil, keyEquivalent: "")
+            header.isEnabled = false
+            resizeMenu.addItem(header)
+            for preset in group.presets {
+                let it = NSMenuItem(title: preset.label, action: #selector(armResize(_:)), keyEquivalent: "")
+                it.target = self
+                it.tag = tag          // WindowResizeController.presets(평탄화) 인덱스
+                it.indentationLevel = 1
+                resizeMenu.addItem(it)
+                tag += 1
+            }
         }
         resizeItem.submenu = resizeMenu
         menu.addItem(resizeItem)
@@ -47,6 +56,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         hotkeyHintItem = hotkeyHint
 
         addItem(to: menu, title: "설정…", action: #selector(openPreferences), key: ",")
+        addItem(to: menu, title: "시작 가이드…", action: #selector(openOnboarding))
 
         // Sparkle 업데이트 확인.
         let updateItem = NSMenuItem(title: "업데이트 확인…",
@@ -100,6 +110,10 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     @objc private func openPreferences() {
         if prefs == nil { prefs = PreferencesWindowController() }
         prefs?.showWindow()
+    }
+
+    @objc private func openOnboarding() {
+        OnboardingWindowController.shared.show()
     }
 
     @objc private func openAccessibility() {

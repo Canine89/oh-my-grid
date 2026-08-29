@@ -45,6 +45,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Sparkle 업데이터 기동.
         _ = UpdaterController.shared
+
+        // 첫 실행(또는 아직 가이드를 끝내지 않음) → 온보딩. 메뉴바 전용 앱이라 이게 없으면
+        // 사용자는 앱이 켜졌는지도, 어떻게 쓰는지도 알 수 없다.
+        if !Settings.shared.onboardingCompleted {
+            OnboardingWindowController.shared.show()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

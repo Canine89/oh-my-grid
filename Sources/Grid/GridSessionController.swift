@@ -138,6 +138,10 @@ final class GridSessionController {
         pendingWindow = nil
         pendingFrame = nil
         targetWindow = nil
+        var pid: pid_t = 0
+        if AXUIElementGetPid(window, &pid) == .success {
+            NotificationCenter.default.post(name: .gridSnapCommitted, object: nil, userInfo: ["pid": pid])
+        }
         // 즉시 적용하지 않는다(그러면 OS 드래그 종료가 창을 커서로 되돌려 번쩍임). 창이 커서에
         // 있는 동안 OS가 드래그를 끝내게 두고(제자리=무해), 그 직후에 한 번만 그리드로 스냅한다.
         for delay in [0.05, 0.18] {
@@ -336,4 +340,9 @@ final class GridSessionController {
             }
         }
     }
+}
+
+extension Notification.Name {
+    /// 그리드/가장자리 스냅이 창에 확정 적용될 때(userInfo["pid"] = 대상 창의 프로세스). 온보딩 연습 판정용.
+    static let gridSnapCommitted = Notification.Name("com.goldenrabbit.ohmygrid.snapCommitted")
 }

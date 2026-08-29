@@ -16,6 +16,13 @@ final class Settings {
         static let excludedApps = "excludedApps"
         static let hotkeyKeyCode = "gridHotkeyKeyCode"
         static let hotkeyMods = "gridHotkeyMods"
+        static let onboardingCompleted = "onboardingCompleted"
+    }
+
+    /// 첫 실행 온보딩을 끝냈거나 닫았는지. 기본 false.
+    var onboardingCompleted: Bool {
+        get { defaults.bool(forKey: Keys.onboardingCompleted) }
+        set { defaults.set(newValue, forKey: Keys.onboardingCompleted) }
     }
 
     /// 그리드 열 수. 기본 6.
