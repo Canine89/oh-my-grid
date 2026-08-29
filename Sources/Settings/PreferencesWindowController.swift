@@ -38,7 +38,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
         let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 520),
                            styleMask: [.titled, .closable, .miniaturizable],
                            backing: .buffered, defer: false)
-        win.title = "\(Brand.name) 설정"
+        win.title = String(localized: "\(Brand.name) Settings")
         win.contentView = host
         win.delegate = self
         win.isReleasedWhenClosed = false

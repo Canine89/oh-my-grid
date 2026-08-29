@@ -8,7 +8,7 @@ enum PermissionNotice {
 
     /// 손쉬운 사용 권한이 없어 동작을 못 할 때 안내. 몇 초 뒤 자동으로 사라진다.
     static func showDenied() {
-        show(text: "손쉬운 사용 권한이 필요합니다 — 메뉴에서 「권한 다시 요청」을 눌러 주세요")
+        show(text: String(localized: "Accessibility permission is required — choose “Request Accessibility Permission” from the menu"))
     }
 
     static func show(text: String) {

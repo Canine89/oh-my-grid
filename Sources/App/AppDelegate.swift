@@ -104,14 +104,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let appItem = NSMenuItem()
         mainMenu.addItem(appItem)
         let appMenu = NSMenu()
-        appMenu.addItem(withTitle: "\(Brand.name) 종료",
+        appMenu.addItem(withTitle: String(localized: "Quit \(Brand.name)"),
                         action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu
 
         let editItem = NSMenuItem()
         mainMenu.addItem(editItem)
-        let editMenu = NSMenu(title: "편집")
-        editMenu.addItem(withTitle: "복사", action: Selector(("copy:")), keyEquivalent: "c")
+        let editMenu = NSMenu(title: String(localized: "Edit"))
+        editMenu.addItem(withTitle: String(localized: "Copy"), action: Selector(("copy:")), keyEquivalent: "c")
         editItem.submenu = editMenu
 
         NSApp.mainMenu = mainMenu

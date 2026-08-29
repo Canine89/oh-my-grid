@@ -13,15 +13,15 @@ enum LoginItemController {
     static var statusMessage: String {
         switch status {
         case .enabled:
-            return "✅ 로그인 시 자동 실행이 켜져 있습니다."
+            return String(localized: "Launch at login is on.")
         case .notRegistered:
-            return "로그인 시 자동 실행이 꺼져 있습니다."
+            return String(localized: "Launch at login is off.")
         case .requiresApproval:
-            return "⚠️ macOS 설정에서 로그인 항목 승인이 필요합니다."
+            return String(localized: "⚠️ Approval is required in System Settings › Login Items.")
         case .notFound:
-            return "⚠️ 로그인 항목 상태를 확인할 수 없습니다."
+            return String(localized: "⚠️ Login item status is unavailable.")
         @unknown default:
-            return "⚠️ 로그인 항목 상태를 확인할 수 없습니다."
+            return String(localized: "⚠️ Login item status is unavailable.")
         }
     }
 

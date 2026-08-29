@@ -16,22 +16,22 @@ struct SettingsView: View {
     var body: some View {
         TabView(selection: $tab) {
             GeneralTab(store: store)
-                .tabItem { Label("일반", systemImage: "switch.2") }
+                .tabItem { Label("General", systemImage: "switch.2") }
                 .tag(Tab.general)
             GridTab(store: store)
-                .tabItem { Label("그리드", systemImage: "rectangle.split.3x3") }
+                .tabItem { Label("Grid", systemImage: "rectangle.split.3x3") }
                 .tag(Tab.grid)
             HotkeyTab(store: store)
-                .tabItem { Label("단축키", systemImage: "keyboard") }
+                .tabItem { Label("Shortcuts", systemImage: "keyboard") }
                 .tag(Tab.hotkey)
             PresetsTab(store: store)
-                .tabItem { Label("창 크기", systemImage: "arrow.up.left.and.arrow.down.right") }
+                .tabItem { Label("Sizes", systemImage: "arrow.up.left.and.arrow.down.right") }
                 .tag(Tab.presets)
             ExclusionTab(store: store)
-                .tabItem { Label("예외 앱", systemImage: "app.badge.checkmark") }
+                .tabItem { Label("Excluded Apps", systemImage: "app.badge.checkmark") }
                 .tag(Tab.exclusion)
             AboutTab(store: store)
-                .tabItem { Label("정보", systemImage: "info.circle") }
+                .tabItem { Label("About", systemImage: "info.circle") }
                 .tag(Tab.about)
         }
         .frame(width: 560, height: 520)
@@ -46,44 +46,42 @@ private struct GeneralTab: View {
     var body: some View {
         Form {
             Section {
-                Toggle("그리드 제스처", isOn: $store.enabled)
-                Text("창을 드래그하는 도중 오른쪽 버튼을 한 번 클릭하면 그리드가 켜집니다. 다시 우클릭하거나 Esc 로 취소합니다.")
+                Toggle("Grid Gesture", isOn: $store.enabled)
+                Text("Click the right button once while dragging a window to turn on the grid. Right-click again or press Esc to cancel.")
                     .settingsCaption()
-                Toggle("가장자리 절반 스냅", isOn: $store.edgeSnap)
-                Text("창을 화면 좌·우·아래 끝으로 끌면 절반, 위 끝으로 끌면 최대화됩니다.")
+                Toggle("Edge Snapping", isOn: $store.edgeSnap)
+                Text("Drag a window to the left, right, or bottom edge for a half; to the top edge to maximize.")
                     .settingsCaption()
             }
             Section {
-                Toggle("로그인 시 자동 실행", isOn: Binding(
+                Toggle("Launch at Login", isOn: Binding(
                     get: { store.launchAtLogin },
                     set: { store.setLaunchAtLogin($0) }))
                 Text(store.launchAtLoginMessage).settingsCaption()
             }
-            Section("권한") {
+            Section("Permission") {
                 HStack(spacing: 10) {
                     Image(systemName: store.permissionGranted ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                         .foregroundStyle(store.permissionGranted ? .green : .orange)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("손쉬운 사용")
-                        Text(store.permissionGranted
-                             ? "허용됨 — 창을 옮길 수 있습니다."
-                             : "권한이 없어 창을 옮길 수 없습니다.")
+                        Text("Accessibility")
+                        (store.permissionGranted
+                             ? Text("Granted — windows can be moved.")
+                             : Text("Not granted — windows can’t be moved."))
                             .settingsCaption()
                     }
                     Spacer()
-                    Button(store.permissionGranted ? "설정 열기…" : "권한 요청…") {
-                        if store.permissionGranted {
-                            AccessibilityPermission.openSystemSettings()
-                        } else {
-                            AccessibilityPermission.requestAndOpenSettings()
-                        }
+                    if store.permissionGranted {
+                        Button("Open Settings…") { AccessibilityPermission.openSystemSettings() }
+                    } else {
+                        Button("Request Permission…") { AccessibilityPermission.requestAndOpenSettings() }
                     }
                 }
                 HStack {
-                    Text("처음 쓰는 방법을 다시 보려면")
+                    Text("See the first-run walkthrough again")
                         .settingsCaption()
                     Spacer()
-                    Button("시작 가이드…") { store.openOnboarding?() }
+                    Button("Getting Started…") { store.openOnboarding?() }
                 }
             }
         }
@@ -105,22 +103,22 @@ private struct GridTab: View {
                     .frame(maxWidth: .infinity)
                     .listRowInsets(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12))
             }
-            Section("칸 수") {
+            Section("Cells") {
                 Stepper(value: $store.columns, in: 1...24) {
-                    LabeledContent("열 (가로)") { Text("\(store.columns)").monospacedDigit() }
+                    LabeledContent("Columns") { Text("\(store.columns)").monospacedDigit() }
                 }
                 Stepper(value: $store.rows, in: 1...24) {
-                    LabeledContent("행 (세로)") { Text("\(store.rows)").monospacedDigit() }
+                    LabeledContent("Rows") { Text("\(store.rows)").monospacedDigit() }
                 }
             }
-            Section("여백") {
+            Section("Gaps") {
                 LabeledContent {
                     HStack {
                         Slider(value: $store.outerMargin, in: 0...48, step: 1)
                         Text("\(Int(store.outerMargin)) px").monospacedDigit().frame(width: 44, alignment: .trailing)
                     }
                 } label: {
-                    Text("화면 가장자리")
+                    Text("Screen edges")
                 }
                 LabeledContent {
                     HStack {
@@ -128,9 +126,9 @@ private struct GridTab: View {
                         Text("\(Int(store.innerGap)) px").monospacedDigit().frame(width: 44, alignment: .trailing)
                     }
                 } label: {
-                    Text("창 사이")
+                    Text("Between windows")
                 }
-                Text("가장자리 여백은 화면 끝에 닿는 변에만, 창 사이 간격은 모든 변에 적용됩니다. 가장자리 절반 스냅에도 같은 값이 쓰입니다.")
+                Text("The edge gap applies only to sides touching the screen edge; the window gap applies to all sides. Edge and keyboard snapping use the same values.")
                     .settingsCaption()
             }
         }
@@ -213,20 +211,49 @@ private struct HotkeyTab: View {
 
     var body: some View {
         Form {
-            Section("그리드 단축키") {
+            Section("Grid Shortcut") {
                 HStack {
-                    Text("창 드래그 중 입력")
+                    Text("Press while dragging a window")
                     Spacer()
                     ShortcutRecorder(hotkey: $store.hotkey, error: $store.hotkeyError)
                         .frame(width: 150, height: 24)
-                    Button("기본값") { store.resetHotkey() }
+                    Button("Default") { store.resetHotkey() }
                         .disabled(store.hotkey == .default)
                 }
                 if !store.hotkeyError.isEmpty {
                     Text(store.hotkeyError).font(.system(size: 11)).foregroundStyle(.red)
                 }
-                Text("트랙패드처럼 드래그 중 우클릭이 어려울 때, 창을 드래그하는 도중 이 조합을 누르면 우클릭과 똑같이 그리드가 켜집니다. macOS 시스템·앱 기본 단축키(⌘Space, ⇧⌘4, ⌘C 등)는 지정할 수 없습니다.")
+                Text("When a right-click while dragging is awkward (trackpads), press this combination while dragging to turn on the grid. macOS system and standard app shortcuts (⌘Space, ⇧⌘4, ⌘C…) can’t be assigned.")
                     .settingsCaption()
+            }
+            Section {
+                Toggle("Keyboard Snapping", isOn: $store.keyboardSnapEnabled)
+                Text("Move the frontmost window without the mouse — halves with arrows, quarters with U/I/J/K, ⌃⌥↩ to maximize, ⌃⌥C to center.")
+                    .settingsCaption()
+            }
+            Section {
+                ForEach(SnapAction.allCases) { action in
+                    HStack {
+                        Text(action.title)
+                        Spacer()
+                        ShortcutRecorder(hotkey: Binding(
+                            get: { store.snapHotkey(for: action) },
+                            set: { store.setSnapHotkey($0, for: action) }),
+                                         error: $store.snapHotkeyError)
+                            .frame(width: 150, height: 24)
+                    }
+                    .disabled(!store.keyboardSnapEnabled)
+                }
+                if !store.snapHotkeyError.isEmpty {
+                    Text(store.snapHotkeyError).font(.system(size: 11)).foregroundStyle(.red)
+                }
+                HStack {
+                    Spacer()
+                    Button("Reset All") { store.resetSnapHotkeys() }
+                        .disabled(store.snapHotkeys.isEmpty)
+                }
+            } header: {
+                Text("Snap Shortcuts")
             }
         }
         .formStyle(.grouped)
@@ -261,14 +288,14 @@ private struct PresetsTab: View {
             List(selection: $selection) {
                 ForEach($store.customPresets) { $preset in
                     HStack(spacing: 8) {
-                        TextField("이름 (선택)", text: $preset.name)
+                        TextField("Name (optional)", text: $preset.name)
                             .textFieldStyle(.roundedBorder)
-                        TextField("너비", value: $preset.width, format: .number.grouping(.never))
+                        TextField("Width", value: $preset.width, format: .number.grouping(.never))
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 64)
                             .multilineTextAlignment(.trailing)
                         Text("×").foregroundStyle(.secondary)
-                        TextField("높이", value: $preset.height, format: .number.grouping(.never))
+                        TextField("Height", value: $preset.height, format: .number.grouping(.never))
                             .textFieldStyle(.roundedBorder)
                             .frame(width: 64)
                             .multilineTextAlignment(.trailing)
@@ -282,9 +309,9 @@ private struct PresetsTab: View {
                     VStack(spacing: 6) {
                         Image(systemName: "arrow.up.left.and.arrow.down.right")
                             .font(.system(size: 28)).foregroundStyle(.tertiary)
-                        Text("사용자 지정 크기가 없습니다")
+                        Text("No custom sizes")
                             .foregroundStyle(.secondary)
-                        Text("아래에서 추가하면 메뉴 막대 → 창 크기 고정 에 “사용자 지정” 섹션으로 나타납니다.")
+                        Text("Sizes you add here appear under “Custom” in the menu bar → Resize Window.")
                             .settingsCaption()
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: 360)
@@ -294,22 +321,22 @@ private struct PresetsTab: View {
             Divider()
             HStack(spacing: 8) {
                 Button { store.addPreset() } label: { Image(systemName: "plus") }
-                    .help("새 크기 추가 (1280 × 800)")
+                    .help("Add a size (1280 × 800)")
                 Button {
                     store.removePresets(ids: selection)
                     selection.removeAll()
                 } label: { Image(systemName: "minus") }
                     .disabled(selection.isEmpty)
-                    .help("선택 제거")
+                    .help("Remove selected")
                 Divider().frame(height: 18)
                 Button {
                     store.capturePresetFromWindow()
                 } label: {
-                    Label("창 클릭으로 가져오기", systemImage: "scope")
+                    Label("Capture from Window", systemImage: "scope")
                 }
-                .help("다음에 클릭하는 창의 현재 크기를 프리셋으로 추가합니다")
+                .help("Adds the current size of the next window you click")
                 Spacer()
-                Text("영상·App Store 기본 프리셋은 메뉴에 항상 표시됩니다.")
+                Text("Built-in video and App Store sizes are always in the menu.")
                     .settingsCaption()
             }
             .padding(10)
@@ -342,8 +369,8 @@ private struct ExclusionTab: View {
                     VStack(spacing: 6) {
                         Image(systemName: "app.badge.checkmark")
                             .font(.system(size: 28)).foregroundStyle(.tertiary)
-                        Text("예외 앱이 없습니다").foregroundStyle(.secondary)
-                        Text("게임처럼 드래그·우클릭을 직접 쓰는 앱을 여기 넣으면, 그 앱이 맨 앞일 때는 그리드와 가장자리 스냅이 개입하지 않습니다. 앱을 이 창으로 끌어다 놓아도 됩니다.")
+                        Text("No excluded apps").foregroundStyle(.secondary)
+                        Text("Add apps that use drag and right-click themselves (games, etc.). While they’re frontmost, grid and edge snapping stay out of the way. You can also drop apps onto this window.")
                             .settingsCaption()
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: 380)
@@ -369,24 +396,24 @@ private struct ExclusionTab: View {
             Divider()
             HStack(spacing: 8) {
                 Button { addViaPanel() } label: { Image(systemName: "plus") }
-                    .help("Applications 에서 앱 선택…")
+                    .help("Choose from Applications…")
                 Button {
                     store.removeExcludedApps(selection)
                     selection.removeAll()
                 } label: { Image(systemName: "minus") }
                     .disabled(selection.isEmpty)
-                    .help("선택 제거")
+                    .help("Remove selected")
                 Divider().frame(height: 18)
                 Menu {
                     let apps = SettingsStore.runningApps().filter { !store.excludedApps.contains($0.bundleID) }
                     if apps.isEmpty {
-                        Text("추가할 실행 중인 앱이 없습니다")
+                        Text("No running apps to add")
                     }
                     ForEach(apps, id: \.bundleID) { app in
                         Button(app.name) { store.addExcludedApp(bundleID: app.bundleID) }
                     }
                 } label: {
-                    Label("실행 중인 앱에서", systemImage: "macwindow.on.rectangle")
+                    Label("From Running Apps", systemImage: "macwindow.on.rectangle")
                 }
                 .fixedSize()
                 Spacer()
@@ -397,8 +424,8 @@ private struct ExclusionTab: View {
 
     private func addViaPanel() {
         let panel = NSOpenPanel()
-        panel.title = "그리드를 끌 앱 선택"
-        panel.message = "이 앱이 맨 앞일 때는 그리드·가장자리 스냅이 동작하지 않습니다."
+        panel.title = String(localized: "Choose apps to exclude")
+        panel.message = String(localized: "Grid and edge snapping are disabled while these apps are frontmost.")
         panel.directoryURL = URL(fileURLWithPath: "/Applications")
         panel.allowedContentTypes = [.application]
         panel.allowsMultipleSelection = true
@@ -419,18 +446,18 @@ private struct AboutTab: View {
                 .resizable().frame(width: 96, height: 96)
             VStack(spacing: 4) {
                 Text(Brand.name).font(.system(size: 22, weight: .bold))
-                Text("버전 \(SettingsStore.versionString)").foregroundStyle(.secondary).monospacedDigit()
+                Text("Version \(SettingsStore.versionString)").foregroundStyle(.secondary).monospacedDigit()
                 Text(Brand.tagline).settingsCaption()
             }
-            Button("업데이트 확인…") { store.checkForUpdates?() }
+            Button("Check for Updates…") { store.checkForUpdates?() }
             HStack(spacing: 16) {
                 Link("GitHub", destination: URL(string: "https://github.com/Canine89/oh-my-grid")!)
-                Link("문의하기", destination: URL(string: "mailto:hgpark@goldenrabbit.co.kr")!)
-                Link("변경 이력", destination: URL(string: "https://github.com/Canine89/oh-my-grid/blob/main/CHANGELOG.md")!)
+                Link("Contact", destination: URL(string: "mailto:hgpark@goldenrabbit.co.kr")!)
+                Link("Changelog", destination: URL(string: "https://github.com/Canine89/oh-my-grid/blob/main/CHANGELOG.md")!)
             }
             .font(.system(size: 12))
             Spacer()
-            Text("© 2026 Golden Rabbit · 무료 / 오픈소스")
+            Text("© 2026 Golden Rabbit · Free & open source")
                 .settingsCaption()
         }
         .padding(.top, 28)

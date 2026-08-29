@@ -20,16 +20,16 @@ final class WindowResizeController {
         let presets: [Preset]
     }
     static let builtinGroups: [PresetGroup] = [
-        PresetGroup(title: "영상", presets: [
+        PresetGroup(title: String(localized: "Video"), presets: [
             Preset(label: "4:3 · 720 × 480",    size: CGSize(width: 720,  height: 480)),
             Preset(label: "16:9 · 1280 × 720",  size: CGSize(width: 1280, height: 720)),
             Preset(label: "16:9 · 1920 × 1080", size: CGSize(width: 1920, height: 1080)),
         ]),
         // Mac App Store 스크린샷 요구 해상도(16:10, 픽셀 기준).
         // 창 크기는 포인트라서 Retina(2x) 디스플레이에서는 1280×800 창이 2560×1600 픽셀로 캡처된다.
-        PresetGroup(title: "App Store 스크린샷 (Mac · 16:10)", presets: [
-            Preset(label: "1280 × 800  (Retina 캡처 → 2560 × 1600)", size: CGSize(width: 1280, height: 800)),
-            Preset(label: "1440 × 900  (Retina 캡처 → 2880 × 1800)", size: CGSize(width: 1440, height: 900)),
+        PresetGroup(title: String(localized: "App Store Screenshots (Mac · 16:10)"), presets: [
+            Preset(label: String(localized: "1280 × 800  (Retina capture → 2560 × 1600)"), size: CGSize(width: 1280, height: 800)),
+            Preset(label: String(localized: "1440 × 900  (Retina capture → 2880 × 1800)"), size: CGSize(width: 1440, height: 900)),
             Preset(label: "2560 × 1600", size: CGSize(width: 2560, height: 1600)),
             Preset(label: "2880 × 1800", size: CGSize(width: 2880, height: 1800)),
         ]),
@@ -38,7 +38,7 @@ final class WindowResizeController {
     static var presetGroups: [PresetGroup] {
         let custom = Settings.shared.customPresets
         guard !custom.isEmpty else { return builtinGroups }
-        let group = PresetGroup(title: "사용자 지정", presets: custom.map {
+        let group = PresetGroup(title: String(localized: "Custom"), presets: custom.map {
             Preset(label: $0.label, size: CGSize(width: $0.width, height: $0.height))
         })
         return builtinGroups + [group]
@@ -69,7 +69,7 @@ final class WindowResizeController {
         pendingSize = size
         hoveredWindow = nil
         MouseEventTap.shared.setTracksMouseMoved(true)
-        showHUD(text: "크기 바꿀 창을 클릭하세요 — \(label)   (Esc 취소)")
+        showHUD(text: String(localized: "Click the window to resize — \(label)   (Esc to cancel)"))
         glog("창 크기 고정 무장 \(Int(size.width))x\(Int(size.height))")
     }
 
@@ -84,7 +84,7 @@ final class WindowResizeController {
         captureHandler = handler
         hoveredWindow = nil
         MouseEventTap.shared.setTracksMouseMoved(true)
-        showHUD(text: "크기를 가져올 창을 클릭하세요   (Esc 취소)")
+        showHUD(text: String(localized: "Click a window to capture its size   (Esc to cancel)"))
         glog("창 크기 가져오기 무장")
     }
 
@@ -157,7 +157,7 @@ final class WindowResizeController {
             rect = clamp(rect, within: usable)
             // 화면 사용 영역보다 큰 프리셋(App Store 2560×1600 등)은 앱이 창을 그 크기로 못 늘린다 → 안내.
             if size.width > usable.width || size.height > usable.height {
-                PermissionNotice.show(text: "이 화면 사용 영역(\(Int(usable.width)) × \(Int(usable.height)))보다 커서 \(Int(size.width)) × \(Int(size.height))로 맞추지 못할 수 있습니다")
+                PermissionNotice.show(text: String(localized: "\(Int(size.width)) × \(Int(size.height)) is larger than this screen’s usable area (\(Int(usable.width)) × \(Int(usable.height))) and may not fit"))
             }
         }
         AXWindowController.shared.setFrame(rect, for: window)

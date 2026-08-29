@@ -72,7 +72,7 @@ final class AXWindowController {
     }
 
     /// 프런트모스트 앱의 포커스 창 (폴백).
-    private func frontmostFocusedWindow() -> AXUIElement? {
+    func frontmostFocusedWindow() -> AXUIElement? {
         guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
         let appElement = AXUIElementCreateApplication(app.processIdentifier)
         return copyElement(appElement, kAXFocusedWindowAttribute)

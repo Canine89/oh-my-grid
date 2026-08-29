@@ -9,6 +9,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     private var hotkeyHintItem: NSMenuItem?
     private var updateItem: NSMenuItem?
     private var resizeItem: NSMenuItem?
+    private var snapItem: NSMenuItem?
 
     override init() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -16,7 +17,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
 
         if let button = statusItem.button {
             button.image = NSImage(systemSymbolName: "rectangle.split.3x3",
-                                   accessibilityDescription: "\(Brand.name) 그리드")
+                                   accessibilityDescription: String(localized: "\(Brand.name) grid"))
             button.image?.isTemplate = true
         }
 
@@ -27,10 +28,16 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         menu.addItem(header)
         menu.addItem(.separator())
 
-        enabledItem = addItem(to: menu, title: "그리드 켜기", action: #selector(toggleEnabled))
+        enabledItem = addItem(to: menu, title: String(localized: "Enable Grid"), action: #selector(toggleEnabled))
+
+        // 창 스냅(키보드 단축키와 같은 동작을 메뉴에서도). 단축키가 바뀔 수 있어 열 때마다 다시 만든다.
+        let snapItem = NSMenuItem(title: String(localized: "Snap Window"), action: nil, keyEquivalent: "")
+        snapItem.submenu = makeSnapMenu()
+        menu.addItem(snapItem)
+        self.snapItem = snapItem
 
         // 창 크기 고정: 비율 선택 → 바꿀 창 클릭. 사용자 지정 프리셋이 바뀔 수 있어 열 때마다 다시 만든다.
-        let resizeItem = NSMenuItem(title: "창 크기 고정", action: nil, keyEquivalent: "")
+        let resizeItem = NSMenuItem(title: String(localized: "Resize Window"), action: nil, keyEquivalent: "")
         resizeItem.submenu = makeResizeMenu()
         menu.addItem(resizeItem)
         self.resizeItem = resizeItem
@@ -41,11 +48,11 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         menu.addItem(hotkeyHint)
         hotkeyHintItem = hotkeyHint
 
-        addItem(to: menu, title: "설정…", action: #selector(openPreferences), key: ",")
-        addItem(to: menu, title: "시작 가이드…", action: #selector(openOnboarding))
+        addItem(to: menu, title: String(localized: "Settings…"), action: #selector(openPreferences), key: ",")
+        addItem(to: menu, title: String(localized: "Getting Started…"), action: #selector(openOnboarding))
 
         // Sparkle 업데이트 확인.
-        let updateItem = NSMenuItem(title: "업데이트 확인…",
+        let updateItem = NSMenuItem(title: String(localized: "Check for Updates…"),
                                     action: #selector(UpdaterController.checkForUpdates(_:)),
                                     keyEquivalent: "")
         updateItem.target = UpdaterController.shared
@@ -53,12 +60,42 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         self.updateItem = updateItem
 
         // 권한 미허용 시에만 보이는 안내 항목.
-        let perm = addItem(to: menu, title: "손쉬운 사용 권한 다시 요청…", action: #selector(openAccessibility))
+        let perm = addItem(to: menu, title: String(localized: "Request Accessibility Permission…"), action: #selector(openAccessibility))
         permissionItem = perm
 
         menu.addItem(.separator())
-        addItem(to: menu, title: "\(Brand.name) 종료", action: #selector(quit), key: "q")
+        addItem(to: menu, title: String(localized: "Quit \(Brand.name)"), action: #selector(quit), key: "q")
         statusItem.menu = menu
+    }
+
+    /// 키보드 스냅 동작 목록. 단축키는 표시용(실제 처리는 이벤트 탭).
+    private func makeSnapMenu() -> NSMenu {
+        let m = NSMenu()
+        let groups: [[SnapAction]] = [[.leftHalf, .rightHalf, .topHalf, .bottomHalf],
+                                      [.maximize, .center],
+                                      [.topLeft, .topRight, .bottomLeft, .bottomRight]]
+        for (gi, group) in groups.enumerated() {
+            if gi > 0 { m.addItem(.separator()) }
+            for action in group {
+                let it = NSMenuItem(title: action.title, action: #selector(performSnap(_:)), keyEquivalent: "")
+                it.target = self
+                it.representedObject = action.rawValue
+                if Settings.shared.keyboardSnapEnabled, let ke = Settings.shared.snapHotkey(for: action).menuKeyEquivalent {
+                    it.keyEquivalent = ke.key
+                    it.keyEquivalentModifierMask = ke.flags
+                }
+                m.addItem(it)
+            }
+        }
+        return m
+    }
+
+    @objc private func performSnap(_ sender: NSMenuItem) {
+        guard let raw = sender.representedObject as? String, let action = SnapAction(rawValue: raw) else { return }
+        // 메뉴가 닫히고 원래 앱이 다시 맨 앞이 된 뒤 실행(메뉴바 앱은 activate 되지 않으므로 보통 즉시 OK).
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            MainActor.assumeIsolated { KeyboardSnapController.shared.perform(action) }
+        }
     }
 
     /// 프리셋 그룹(기본 + 사용자 지정)을 섹션으로 나눈 서브메뉴.
@@ -86,13 +123,14 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     func menuWillOpen(_ menu: NSMenu) {
         enabledItem?.state = Settings.shared.enabled ? .on : .off
         resizeItem?.submenu = makeResizeMenu()
+        snapItem?.submenu = makeSnapMenu()
         let granted = AccessibilityPermission.isGranted
         permissionItem?.isHidden = granted
         // 권한 watcher 타임아웃 이후 뒤늦게 허용된 경우: 메뉴만 열어도 탭을 복구한다(이미 있으면 no-op).
         if granted { _ = MouseEventTap.shared.start() }
-        hotkeyHintItem?.title = "트랙패드: 드래그 중 \(Settings.shared.gridHotkey.displayString)"
+        hotkeyHintItem?.title = String(localized: "Trackpad: press \(Settings.shared.gridHotkey.displayString) while dragging")
         let updater = UpdaterController.shared
-        updateItem?.title = updater.lastFailure == nil ? "업데이트 확인…" : "업데이트 다시 시도…"
+        updateItem?.title = updater.lastFailure == nil ? String(localized: "Check for Updates…") : String(localized: "Retry Update…")
         updateItem?.isEnabled = updater.lastFailure != nil || updater.canCheckForUpdates
         updateItem?.toolTip = updater.lastFailure?.localizedDescription
     }

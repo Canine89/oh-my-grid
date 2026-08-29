@@ -36,21 +36,21 @@ struct OnboardingView: View {
             pageDots
             Spacer()
             if model.page == .permission {
-                Button("건너뛰기") { model.next() }
+                Button("Skip") { model.next() }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
             } else if model.page == .practice {
-                Button("뒤로") { model.back() }
+                Button("Back") { model.back() }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                 if !model.snapSucceeded {
-                    Button("건너뛰기") { model.next() }
+                    Button("Skip") { model.next() }
                         .buttonStyle(.plain)
                         .foregroundStyle(.secondary)
                         .padding(.leading, 12)
                 }
             } else {
-                Button("뒤로") { model.back() }
+                Button("Back") { model.back() }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
             }
@@ -63,17 +63,17 @@ struct OnboardingView: View {
     private var primaryButton: some View {
         switch model.page {
         case .permission:
-            Button("다음") { model.next() }
+            Button("Next") { model.next() }
                 .keyboardShortcut(.defaultAction)
                 .buttonStyle(.borderedProminent)
                 .disabled(!model.permissionGranted)
         case .practice:
-            Button("다음") { model.next() }
+            Button("Next") { model.next() }
                 .keyboardShortcut(.defaultAction)
                 .buttonStyle(.borderedProminent)
                 .disabled(!model.snapSucceeded)
         case .finish:
-            Button("시작하기") { model.onFinish?() }
+            Button("Get Started") { model.onFinish?() }
                 .keyboardShortcut(.defaultAction)
                 .buttonStyle(.borderedProminent)
         }
@@ -94,8 +94,8 @@ struct OnboardingView: View {
 
 private struct PageHeader: View {
     let symbol: String
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
 
     var body: some View {
         VStack(spacing: 10) {
@@ -117,7 +117,7 @@ private struct PageHeader: View {
 
 private struct StepRow: View {
     let number: Int
-    let text: String
+    let text: LocalizedStringKey
     var done = false
 
     var body: some View {
@@ -142,8 +142,8 @@ private struct StepRow: View {
 
 private struct StatusPill: View {
     let ok: Bool
-    let okText: String
-    let waitingText: String
+    let okText: LocalizedStringKey
+    let waitingText: LocalizedStringKey
 
     var body: some View {
         HStack(spacing: 8) {
@@ -152,7 +152,7 @@ private struct StatusPill: View {
             } else {
                 ProgressView().controlSize(.small)
             }
-            Text(ok ? okText : waitingText)
+            (ok ? Text(okText) : Text(waitingText))
                 .font(.system(size: 12, weight: .medium))
         }
         .padding(.horizontal, 12)
@@ -171,24 +171,24 @@ private struct PermissionPage: View {
     var body: some View {
         VStack(spacing: 22) {
             PageHeader(symbol: "lock.shield",
-                       title: "손쉬운 사용 권한이 필요합니다",
-                       subtitle: "다른 앱의 창을 옮기고 드래그 중 제스처를 읽는 데 씁니다.\n화면 녹화·파일 접근 권한은 사용하지 않습니다.")
+                       title: "Accessibility Permission Needed",
+                       subtitle: "Used to move other apps’ windows and read the gesture while you drag.\nNo screen recording or file access is used.")
 
             VStack(alignment: .leading, spacing: 10) {
-                StepRow(number: 1, text: "아래 버튼으로 시스템 설정의 손쉬운 사용 목록을 엽니다.")
-                StepRow(number: 2, text: "목록에서 oh-my-grid 스위치를 켭니다.")
-                StepRow(number: 3, text: "이 창으로 돌아오면 자동으로 다음 단계로 넘어갑니다.", done: model.permissionGranted)
+                StepRow(number: 1, text: "Open the Accessibility list in System Settings with the button below.")
+                StepRow(number: 2, text: "Turn on the oh-my-grid switch in the list.")
+                StepRow(number: 3, text: "Come back to this window — it moves on automatically.", done: model.permissionGranted)
             }
             .frame(maxWidth: 400, alignment: .leading)
 
             Button {
                 model.onOpenPermission?()
             } label: {
-                Label("시스템 설정 열기", systemImage: "gearshape")
+                Label("Open System Settings", systemImage: "gearshape")
             }
             .controlSize(.large)
 
-            StatusPill(ok: model.permissionGranted, okText: "허용됨", waitingText: "권한을 기다리는 중…")
+            StatusPill(ok: model.permissionGranted, okText: "Granted", waitingText: "Waiting for permission…")
             Spacer(minLength: 0)
         }
     }
@@ -205,11 +205,11 @@ private struct PracticePage: View {
                 .frame(width: 220, height: 130)
 
             VStack(spacing: 6) {
-                Text(model.snapSucceeded ? "성공! 창이 그리드에 맞춰졌습니다" : "이 창으로 연습해 보세요")
+                (model.snapSucceeded ? Text("Success! The window snapped to the grid") : Text("Practice with this window"))
                     .font(.system(size: 22, weight: .bold))
-                Text(model.snapSucceeded
-                     ? "이제 어떤 앱의 창이든 같은 방법으로 배치할 수 있습니다."
-                     : "제목 표시줄을 잡고 드래그하다 오른쪽 버튼을 한 번 누르면 그리드가 켜집니다.")
+                (model.snapSucceeded
+                     ? Text("You can now place any app’s window the same way.")
+                     : Text("Drag the title bar, then click the right button once to turn on the grid."))
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -218,15 +218,15 @@ private struct PracticePage: View {
 
             if !model.snapSucceeded {
                 VStack(alignment: .leading, spacing: 10) {
-                    StepRow(number: 1, text: "이 창의 제목 표시줄을 왼쪽 버튼으로 잡고 드래그를 시작합니다.")
-                    StepRow(number: 2, text: "드래그하는 도중 오른쪽 버튼을 한 번 클릭합니다. (계속 누르고 있지 않아도 됩니다)")
-                    StepRow(number: 3, text: "파란 블록이 원하는 칸들을 덮도록 움직인 뒤 왼쪽 버튼을 놓습니다.")
+                    StepRow(number: 1, text: "Grab this window’s title bar with the left button and start dragging.")
+                    StepRow(number: 2, text: "While dragging, click the right button once. (No need to hold it.)")
+                    StepRow(number: 3, text: "Move until the blue block covers the cells you want, then release the left button.")
                 }
                 .frame(maxWidth: 420, alignment: .leading)
 
                 HStack(spacing: 6) {
                     Image(systemName: "hand.point.up.left")
-                    Text("트랙패드라면 드래그 중 **\(model.hotkeyDisplay)** 를 누르세요. Esc 로 취소합니다.")
+                    Text("On a trackpad, press **\(model.hotkeyDisplay)** while dragging. Esc cancels.")
                 }
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
@@ -302,18 +302,18 @@ private struct FinishPage: View {
     var body: some View {
         VStack(spacing: 22) {
             PageHeader(symbol: "checkmark.seal",
-                       title: "준비됐습니다",
-                       subtitle: "자주 쓰는 옵션만 골라 두세요. 언제든 메뉴 막대 → 설정… 에서 바꿀 수 있습니다.")
+                       title: "You’re All Set",
+                       subtitle: "Pick the options you use most. You can change them anytime in the menu bar → Settings…")
 
             Form {
-                Toggle("로그인 시 자동 실행", isOn: $model.launchAtLogin)
-                Toggle("가장자리 절반 스냅 (창을 화면 끝으로 드래그)", isOn: $model.edgeSnap)
-                Picker("그리드 크기", selection: $model.gridPreset) {
+                Toggle("Launch at Login", isOn: $model.launchAtLogin)
+                Toggle("Edge Snapping (drag a window to a screen edge)", isOn: $model.edgeSnap)
+                Picker("Grid Size", selection: $model.gridPreset) {
                     ForEach(OnboardingModel.GridPreset.allCases) { p in
                         Text(p.label).tag(Optional(p))
                     }
                     if model.gridPreset == nil {
-                        Text("현재 (\(model.currentGridLabel))").tag(Optional<OnboardingModel.GridPreset>.none)
+                        Text("Current (\(model.currentGridLabel))").tag(Optional<OnboardingModel.GridPreset>.none)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -323,7 +323,7 @@ private struct FinishPage: View {
             .frame(maxWidth: 440)
 
             if let err = model.launchAtLoginError {
-                Text("⚠️ 로그인 항목 변경 실패: \(err)")
+                Text("⚠️ Couldn’t change login item: \(err)")
                     .font(.system(size: 11))
                     .foregroundStyle(.red)
             }

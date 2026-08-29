@@ -38,7 +38,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 480),
                            styleMask: [.titled, .closable, .miniaturizable, .resizable],
                            backing: .buffered, defer: false)
-        win.title = "\(Brand.name) 시작 가이드"
+        win.title = String(localized: "Getting Started with \(Brand.name)")
         win.contentView = host
         win.minSize = NSSize(width: 520, height: 440)
         win.delegate = self

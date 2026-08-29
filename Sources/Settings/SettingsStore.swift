@@ -21,6 +21,9 @@ final class SettingsStore: ObservableObject {
     // 단축키
     @Published var hotkey: Hotkey { didSet { guard !loading else { return }; Settings.shared.gridHotkey = hotkey; hotkeyError = ""; notify() } }
     @Published var hotkeyError: String = ""
+    @Published var keyboardSnapEnabled: Bool { didSet { guard !loading else { return }; Settings.shared.keyboardSnapEnabled = keyboardSnapEnabled } }
+    @Published var snapHotkeys: [SnapAction: Hotkey] { didSet { guard !loading else { return }; Settings.shared.snapHotkeys = snapHotkeys } }
+    @Published var snapHotkeyError: String = ""
 
     // 창 크기 프리셋
     @Published var customPresets: [CustomPreset] { didSet { guard !loading else { return }; Settings.shared.customPresets = customPresets } }
@@ -45,6 +48,8 @@ final class SettingsStore: ObservableObject {
         outerMargin = Double(s.outerMargin)
         innerGap = Double(s.innerGap)
         hotkey = s.gridHotkey
+        keyboardSnapEnabled = s.keyboardSnapEnabled
+        snapHotkeys = s.snapHotkeys
         customPresets = s.customPresets
         excludedApps = s.excludedApps
         launchAtLoginMessage = LoginItemController.statusMessage
@@ -62,6 +67,8 @@ final class SettingsStore: ObservableObject {
         outerMargin = Double(s.outerMargin)
         innerGap = Double(s.innerGap)
         hotkey = s.gridHotkey
+        keyboardSnapEnabled = s.keyboardSnapEnabled
+        snapHotkeys = s.snapHotkeys
         customPresets = s.customPresets
         excludedApps = s.excludedApps
         launchAtLogin = LoginItemController.isEnabled
@@ -72,20 +79,43 @@ final class SettingsStore: ObservableObject {
     // MARK: 동작
 
     func setLaunchAtLogin(_ on: Bool) {
+        var failed = false
         do {
             try LoginItemController.setEnabled(on)
         } catch {
-            launchAtLoginMessage = "⚠️ 로그인 항목 변경 실패: \(error.localizedDescription)"
+            failed = true
+            launchAtLoginMessage = String(localized: "⚠️ Couldn’t change login item: \(error.localizedDescription)")
             LoginItemController.openLoginItemsSettings()
         }
         launchAtLogin = LoginItemController.isEnabled
-        if launchAtLoginMessage.hasPrefix("⚠️ 로그인 항목 변경 실패") == false {
-            launchAtLoginMessage = LoginItemController.statusMessage
-        }
+        if !failed { launchAtLoginMessage = LoginItemController.statusMessage }
     }
 
     func resetHotkey() {
         hotkey = .default
+    }
+
+    func snapHotkey(for action: SnapAction) -> Hotkey {
+        snapHotkeys[action] ?? action.defaultHotkey
+    }
+
+    /// 스냅 단축키 변경. 다른 동작·그리드 단축키와 겹치면 거부하고 오류를 표시한다.
+    func setSnapHotkey(_ hk: Hotkey, for action: SnapAction) {
+        if hk == hotkey {
+            snapHotkeyError = String(localized: "Already used by the grid shortcut.")
+            return
+        }
+        if let other = SnapAction.allCases.first(where: { $0 != action && snapHotkey(for: $0) == hk }) {
+            snapHotkeyError = String(localized: "Already used by “\(other.title)”.")
+            return
+        }
+        snapHotkeyError = ""
+        if hk == action.defaultHotkey { snapHotkeys.removeValue(forKey: action) } else { snapHotkeys[action] = hk }
+    }
+
+    func resetSnapHotkeys() {
+        snapHotkeys = [:]
+        snapHotkeyError = ""
     }
 
     func addPreset(width: Int = 1280, height: Int = 800, name: String = "") {

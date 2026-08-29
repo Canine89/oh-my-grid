@@ -296,10 +296,10 @@ final class GridSessionController {
     private func edgeLabel(zone: ScreenGeometry.EdgeZone, size: CGSize) -> String {
         let name: String
         switch zone {
-        case .left: name = "왼쪽 절반"
-        case .right: name = "오른쪽 절반"
-        case .bottom: name = "아래 절반"
-        case .top: name = "최대화"
+        case .left: name = String(localized: "Left Half")
+        case .right: name = String(localized: "Right Half")
+        case .bottom: name = String(localized: "Bottom Half")
+        case .top: name = String(localized: "Maximize")
         }
         return "\(name)  ·  \(Int(size.width)) × \(Int(size.height))"
     }
@@ -309,17 +309,11 @@ final class GridSessionController {
         applyGaps(rect, within: displayBounds)
     }
 
-    /// `bounds`의 가장자리에 닿는 변에만 바깥 여백을, 모든 변에 안쪽 간격을 적용한다.
+    /// 바깥 여백/안쪽 간격 적용(공통 규칙은 `ScreenGeometry.applyGaps`).
     private func applyGaps(_ rect: CGRect, within bounds: CGRect) -> CGRect {
-        var r = rect.insetBy(dx: Settings.shared.innerGap, dy: Settings.shared.innerGap)
-        let m = Settings.shared.outerMargin
-        if m > 0 {
-            if abs(rect.minX - bounds.minX) < 1 { r.origin.x += m; r.size.width -= m }
-            if abs(rect.maxX - bounds.maxX) < 1 { r.size.width -= m }
-            if abs(rect.minY - bounds.minY) < 1 { r.origin.y += m; r.size.height -= m }
-            if abs(rect.maxY - bounds.maxY) < 1 { r.size.height -= m }
-        }
-        return r.integral
+        ScreenGeometry.applyGaps(rect, within: bounds,
+                                 outerMargin: Settings.shared.outerMargin,
+                                 innerGap: Settings.shared.innerGap)
     }
 
     private func teardownOverlay() {

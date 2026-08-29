@@ -11,9 +11,47 @@ struct HotkeyModifiers: OptionSet, Hashable {
 }
 
 /// 그리드 발동 단축키. UserDefaults 저장, CGEvent 매칭, 표시 문자열, 예약어 검증을 담당한다.
-struct Hotkey: Hashable {
+struct Hotkey: Hashable, Codable {
     var keyCode: Int
     var mods: HotkeyModifiers
+
+    private enum CodingKeys: String, CodingKey { case keyCode, mods }
+
+    init(keyCode: Int, mods: HotkeyModifiers) {
+        self.keyCode = keyCode
+        self.mods = mods
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        keyCode = try c.decode(Int.self, forKey: .keyCode)
+        mods = HotkeyModifiers(rawValue: try c.decode(Int.self, forKey: .mods))
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(keyCode, forKey: .keyCode)
+        try c.encode(mods.rawValue, forKey: .mods)
+    }
+
+    /// NSMenuItem 표시용 키 등가(문자, 수정키). 메뉴에 단축키를 보여 주기만 하고 실제 처리는 이벤트 탭이 한다.
+    var menuKeyEquivalent: (key: String, flags: NSEvent.ModifierFlags)? {
+        var flags: NSEvent.ModifierFlags = []
+        if mods.contains(.control) { flags.insert(.control) }
+        if mods.contains(.option)  { flags.insert(.option) }
+        if mods.contains(.shift)   { flags.insert(.shift) }
+        if mods.contains(.command) { flags.insert(.command) }
+        let special: [Int: Int] = [123: NSLeftArrowFunctionKey, 124: NSRightArrowFunctionKey,
+                                   125: NSDownArrowFunctionKey, 126: NSUpArrowFunctionKey]
+        if let fk = special[keyCode], let scalar = UnicodeScalar(fk) {
+            return (String(Character(scalar)), flags)
+        }
+        if keyCode == 36 { return ("\r", flags) }
+        if keyCode == 49 { return (" ", flags) }
+        let name = Hotkey.keyName(keyCode)
+        guard name.count == 1, let ch = name.first, ch.isLetter || ch.isNumber || ch.isPunctuation || ch.isSymbol else { return nil }
+        return (name.lowercased(), flags)
+    }
 
     /// 기본값: ⌃⌥G.
     static let `default` = Hotkey(keyCode: 5, mods: [.control, .option])
@@ -61,10 +99,10 @@ struct Hotkey: Hashable {
     /// 설정 불가 사유(없으면 nil). 수정키 최소조건 + 예약 단축키 목록으로 막는다.
     var validationError: String? {
         if mods.isEmpty || mods == [.shift] {
-            return "⌘·⌃·⌥ 중 하나 이상을 포함해야 합니다 (수정키 없는 키는 일반 입력과 충돌)."
+            return String(localized: "Include at least one of ⌘, ⌃, or ⌥ (keys without modifiers conflict with normal typing).")
         }
         if Hotkey.reserved.contains(self) {
-            return "macOS 시스템·앱 기본 단축키라서 사용할 수 없습니다."
+            return String(localized: "This is a macOS system or standard app shortcut and can’t be used.")
         }
         return nil
     }
@@ -86,7 +124,7 @@ struct Hotkey: Hashable {
     ]
 
     static func keyName(_ code: Int) -> String {
-        keyNames[code] ?? "키\(code)"
+        keyNames[code] ?? String(localized: "Key \(code)")
     }
 
     // MARK: 예약 단축키 (리서치 기반)

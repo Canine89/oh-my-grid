@@ -18,6 +18,33 @@ final class Settings {
         static let hotkeyMods = "gridHotkeyMods"
         static let onboardingCompleted = "onboardingCompleted"
         static let customPresets = "customResizePresets"
+        static let keyboardSnapEnabled = "keyboardSnapEnabled"
+        static let snapHotkeys = "snapHotkeys"
+    }
+
+    /// 키보드 스냅 단축키 활성 여부. 기본 true.
+    var keyboardSnapEnabled: Bool {
+        get { defaults.object(forKey: Keys.keyboardSnapEnabled) == nil ? true : defaults.bool(forKey: Keys.keyboardSnapEnabled) }
+        set { defaults.set(newValue, forKey: Keys.keyboardSnapEnabled) }
+    }
+
+    /// 동작별 사용자 지정 단축키. 없는 동작은 `SnapAction.defaultHotkey`.
+    var snapHotkeys: [SnapAction: Hotkey] {
+        get {
+            guard let data = defaults.data(forKey: Keys.snapHotkeys),
+                  let raw = try? JSONDecoder().decode([String: Hotkey].self, from: data) else { return [:] }
+            var out: [SnapAction: Hotkey] = [:]
+            for (k, v) in raw { if let a = SnapAction(rawValue: k) { out[a] = v } }
+            return out
+        }
+        set {
+            let raw = Dictionary(uniqueKeysWithValues: newValue.map { ($0.key.rawValue, $0.value) })
+            if let data = try? JSONEncoder().encode(raw) { defaults.set(data, forKey: Keys.snapHotkeys) }
+        }
+    }
+
+    func snapHotkey(for action: SnapAction) -> Hotkey {
+        snapHotkeys[action] ?? action.defaultHotkey
     }
 
     /// 사용자 지정 창 크기 프리셋(창 크기 고정 메뉴의 "사용자 지정" 섹션). JSON 으로 저장.

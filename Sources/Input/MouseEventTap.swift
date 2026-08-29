@@ -200,6 +200,10 @@ final class MouseEventTap {
                 glog("Esc → 세션 취소")
                 return nil
             }
+            // 키보드 스냅 단축키(⌃⌥← 등) → 맨 앞 창을 절반/사분면/최대화.
+            if !leftDown, KeyboardSnapController.shared.handle(event) {
+                return nil
+            }
             // 창을 드래그하는 도중 그리드 단축키 → 우클릭과 동일하게 그리드 토글.
             // 트랙패드에서 "끌면서 우클릭"이 어려운 걸 키보드로 대체한다(기본 ⌃⌥G, 설정 변경 가능).
             if leftDown, Settings.shared.gridHotkey.matches(event) {

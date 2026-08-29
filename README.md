@@ -4,6 +4,19 @@
 
 <h1 align="center">oh-my-grid 🪟</h1>
 
+<p align="center"><b>English</b> · <a href="#한국어">한국어</a></p>
+
+**Snap any window to a grid with one gesture.** Start dragging a window, click the right mouse button once, and a grid appears over the screen. Sweep across the cells you want and release — the window fills exactly that block. Halves and quarters are also one keystroke away (`⌃⌥←` `⌃⌥→` `⌃⌥↑` `⌃⌥↓`, `⌃⌥U/I/J/K`, `⌃⌥↩` to maximize).
+
+- macOS 26 (Tahoe) or later · lives in the menu bar · free & open source · English / 한국어
+- Install: `brew install --cask canine89/tap/oh-my-grid` or grab the notarized `.dmg` from [Releases](../../releases/latest)
+- Needs the **Accessibility** permission (System Settings → Privacy & Security → Accessibility). No screen recording, no file access.
+- Trackpad? Press `⌃⌥G` while dragging instead of right-clicking. Everything is configurable in **Settings…**; a first-run guide walks you through it.
+
+---
+
+<a id="한국어"></a>
+
 드래그하던 창을 **그리드에 맞춰 한 번에 배치**하는 macOS 창 정렬 도구. 창을 옮기는 도중 오른쪽 버튼만 누르면 화면에 그리드가 뜨고, 셀을 가로질러 끌어 놓으면 창이 그 영역에 딱 맞게 들어갑니다.
 
 > macOS 26 (Tahoe) 이상 · 메뉴 막대 상주 · 무료 / 오픈소스

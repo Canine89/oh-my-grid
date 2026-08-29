@@ -49,7 +49,7 @@ final class ShortcutRecorderView: NSView {
 
     private func refresh() {
         if recording {
-            label.stringValue = "키 조합을 누르세요…"
+            label.stringValue = String(localized: "Press a key combination…")
             label.textColor = .secondaryLabelColor
             layer?.borderColor = Brand.accent.cgColor
             layer?.backgroundColor = Brand.accent.withAlphaComponent(0.08).cgColor

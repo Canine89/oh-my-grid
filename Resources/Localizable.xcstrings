@@ -1,0 +1,1266 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ Settings": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 설정"
+          }
+        }
+      }
+    },
+    "%@ grid": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 그리드"
+          }
+        }
+      }
+    },
+    "%lld px": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld px"
+          }
+        }
+      }
+    },
+    "%lld × %lld is larger than this screen’s usable area (%lld × %lld) and may not fit": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 화면 사용 영역(%3$lld × %4$lld)보다 커서 %1$lld × %2$lld로 맞추지 못할 수 있습니다"
+          }
+        }
+      }
+    },
+    "1280 × 800  (Retina capture → 2560 × 1600)": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1280 × 800  (Retina 캡처 → 2560 × 1600)"
+          }
+        }
+      }
+    },
+    "1440 × 900  (Retina capture → 2880 × 1800)": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1440 × 900  (Retina 캡처 → 2880 × 1800)"
+          }
+        }
+      }
+    },
+    "About": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "정보"
+          }
+        }
+      }
+    },
+    "Accessibility": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "손쉬운 사용"
+          }
+        }
+      }
+    },
+    "Accessibility Permission Needed": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "손쉬운 사용 권한이 필요합니다"
+          }
+        }
+      }
+    },
+    "Accessibility permission is required — choose “Request Accessibility Permission” from the menu": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "손쉬운 사용 권한이 필요합니다 — 메뉴에서 「권한 다시 요청」을 눌러 주세요"
+          }
+        }
+      }
+    },
+    "Add a size (1280 × 800)": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새 크기 추가 (1280 × 800)"
+          }
+        }
+      }
+    },
+    "Add apps that use drag and right-click themselves (games, etc.). While they’re frontmost, grid and edge snapping stay out of the way. You can also drop apps onto this window.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "게임처럼 드래그·우클릭을 직접 쓰는 앱을 여기 넣으면, 그 앱이 맨 앞일 때는 그리드와 가장자리 스냅이 개입하지 않습니다. 앱을 이 창으로 끌어다 놓아도 됩니다."
+          }
+        }
+      }
+    },
+    "Adds the current size of the next window you click": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음에 클릭하는 창의 현재 크기를 프리셋으로 추가합니다"
+          }
+        }
+      }
+    },
+    "Already used by the grid shortcut.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그리드 단축키와 겹칩니다."
+          }
+        }
+      }
+    },
+    "Already used by “%@”.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” 동작과 겹칩니다."
+          }
+        }
+      }
+    },
+    "App Store Screenshots (Mac · 16:10)": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store 스크린샷 (Mac · 16:10)"
+          }
+        }
+      }
+    },
+    "Back": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "뒤로"
+          }
+        }
+      }
+    },
+    "Between windows": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "창 사이"
+          }
+        }
+      }
+    },
+    "Bottom Half": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아래 절반"
+          }
+        }
+      }
+    },
+    "Bottom Left Quarter": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "왼쪽 아래 1/4"
+          }
+        }
+      }
+    },
+    "Bottom Right Quarter": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오른쪽 아래 1/4"
+          }
+        }
+      }
+    },
+    "Built-in video and App Store sizes are always in the menu.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영상·App Store 기본 프리셋은 메뉴에 항상 표시됩니다."
+          }
+        }
+      }
+    },
+    "Capture from Window": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "창 클릭으로 가져오기"
+          }
+        }
+      }
+    },
+    "Cells": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "칸 수"
+          }
+        }
+      }
+    },
+    "Center": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가운데"
+          }
+        }
+      }
+    },
+    "Changelog": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "변경 이력"
+          }
+        }
+      }
+    },
+    "Check for Updates…": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "업데이트 확인…"
+          }
+        }
+      }
+    },
+    "Choose apps to exclude": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그리드를 끌 앱 선택"
+          }
+        }
+      }
+    },
+    "Choose from Applications…": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applications 에서 앱 선택…"
+          }
+        }
+      }
+    },
+    "Click a window to capture its size   (Esc to cancel)": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "크기를 가져올 창을 클릭하세요   (Esc 취소)"
+          }
+        }
+      }
+    },
+    "Click the right button once while dragging a window to turn on the grid. Right-click again or press Esc to cancel.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "창을 드래그하는 도중 오른쪽 버튼을 한 번 클릭하면 그리드가 켜집니다. 다시 우클릭하거나 Esc 로 취소합니다."
+          }
+        }
+      }
+    },
+    "Click the window to resize — %@   (Esc to cancel)": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "크기 바꿀 창을 클릭하세요 — %@   (Esc 취소)"
+          }
+        }
+      }
+    },
+    "Columns": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "열 (가로)"
+          }
+        }
+      }
+    },
+    "Come back to this window — it moves on automatically.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 창으로 돌아오면 자동으로 다음 단계로 넘어갑니다."
+          }
+        }
+      }
+    },
+    "Contact": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "문의하기"
+          }
+        }
+      }
+    },
+    "Copy": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "복사"
+          }
+        }
+      }
+    },
+    "Current (%@)": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "현재 (%@)"
+          }
+        }
+      }
+    },
+    "Custom": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용자 지정"
+          }
+        }
+      }
+    },
+    "Default": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기본값"
+          }
+        }
+      }
+    },
+    "Drag a window to the left, right, or bottom edge for a half; to the top edge to maximize.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "창을 화면 좌·우·아래 끝으로 끌면 절반, 위 끝으로 끌면 최대화됩니다."
+          }
+        }
+      }
+    },
+    "Drag the title bar, then click the right button once to turn on the grid.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "제목 표시줄을 잡고 드래그하다 오른쪽 버튼을 한 번 누르면 그리드가 켜집니다."
+          }
+        }
+      }
+    },
+    "Edge Snapping": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가장자리 절반 스냅"
+          }
+        }
+      }
+    },
+    "Edge Snapping (drag a window to a screen edge)": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가장자리 절반 스냅 (창을 화면 끝으로 드래그)"
+          }
+        }
+      }
+    },
+    "Edit": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "편집"
+          }
+        }
+      }
+    },
+    "Enable Grid": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그리드 켜기"
+          }
+        }
+      }
+    },
+    "Excluded Apps": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예외 앱"
+          }
+        }
+      }
+    },
+    "From Running Apps": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "실행 중인 앱에서"
+          }
+        }
+      }
+    },
+    "Gaps": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여백"
+          }
+        }
+      }
+    },
+    "General": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일반"
+          }
+        }
+      }
+    },
+    "Get Started": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시작하기"
+          }
+        }
+      }
+    },
+    "Getting Started with %@": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 시작 가이드"
+          }
+        }
+      }
+    },
+    "Getting Started…": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시작 가이드…"
+          }
+        }
+      }
+    },
+    "Grab this window’s title bar with the left button and start dragging.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 창의 제목 표시줄을 왼쪽 버튼으로 잡고 드래그를 시작합니다."
+          }
+        }
+      }
+    },
+    "Granted": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "허용됨"
+          }
+        }
+      }
+    },
+    "Granted — windows can be moved.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "허용됨 — 창을 옮길 수 있습니다."
+          }
+        }
+      }
+    },
+    "Grid": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그리드"
+          }
+        }
+      }
+    },
+    "Grid Gesture": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그리드 제스처"
+          }
+        }
+      }
+    },
+    "Grid Shortcut": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그리드 단축키"
+          }
+        }
+      }
+    },
+    "Grid Size": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그리드 크기"
+          }
+        }
+      }
+    },
+    "Grid and edge snapping are disabled while these apps are frontmost.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 앱이 맨 앞일 때는 그리드·가장자리 스냅이 동작하지 않습니다."
+          }
+        }
+      }
+    },
+    "Height": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "높이"
+          }
+        }
+      }
+    },
+    "Include at least one of ⌘, ⌃, or ⌥ (keys without modifiers conflict with normal typing).": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌘·⌃·⌥ 중 하나 이상을 포함해야 합니다 (수정키 없는 키는 일반 입력과 충돌)."
+          }
+        }
+      }
+    },
+    "Key %lld": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "키%lld"
+          }
+        }
+      }
+    },
+    "Keyboard Snapping": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "키보드 스냅"
+          }
+        }
+      }
+    },
+    "Launch at Login": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로그인 시 자동 실행"
+          }
+        }
+      }
+    },
+    "Launch at login is off.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로그인 시 자동 실행이 꺼져 있습니다."
+          }
+        }
+      }
+    },
+    "Launch at login is on.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "로그인 시 자동 실행이 켜져 있습니다."
+          }
+        }
+      }
+    },
+    "Left Half": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "왼쪽 절반"
+          }
+        }
+      }
+    },
+    "Maximize": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "최대화"
+          }
+        }
+      }
+    },
+    "Move the frontmost window without the mouse — halves with arrows, quarters with U/I/J/K, ⌃⌥↩ to maximize, ⌃⌥C to center.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "마우스 없이 맨 앞 창을 옮깁니다 — 화살표로 절반, U/I/J/K 로 1/4, ⌃⌥↩ 최대화, ⌃⌥C 가운데."
+          }
+        }
+      }
+    },
+    "Move until the blue block covers the cells you want, then release the left button.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "파란 블록이 원하는 칸들을 덮도록 움직인 뒤 왼쪽 버튼을 놓습니다."
+          }
+        }
+      }
+    },
+    "Name (optional)": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이름 (선택)"
+          }
+        }
+      }
+    },
+    "Next": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음"
+          }
+        }
+      }
+    },
+    "No custom sizes": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사용자 지정 크기가 없습니다"
+          }
+        }
+      }
+    },
+    "No excluded apps": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "예외 앱이 없습니다"
+          }
+        }
+      }
+    },
+    "No running apps to add": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "추가할 실행 중인 앱이 없습니다"
+          }
+        }
+      }
+    },
+    "Not granted — windows can’t be moved.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "권한이 없어 창을 옮길 수 없습니다."
+          }
+        }
+      }
+    },
+    "On a trackpad, press **%@** while dragging. Esc cancels.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "트랙패드라면 드래그 중 **%@** 를 누르세요. Esc 로 취소합니다."
+          }
+        }
+      }
+    },
+    "Open Settings…": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정 열기…"
+          }
+        }
+      }
+    },
+    "Open System Settings": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시스템 설정 열기"
+          }
+        }
+      }
+    },
+    "Open the Accessibility list in System Settings with the button below.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아래 버튼으로 시스템 설정의 손쉬운 사용 목록을 엽니다."
+          }
+        }
+      }
+    },
+    "Permission": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "권한"
+          }
+        }
+      }
+    },
+    "Pick the options you use most. You can change them anytime in the menu bar → Settings…": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "자주 쓰는 옵션만 골라 두세요. 언제든 메뉴 막대 → 설정… 에서 바꿀 수 있습니다."
+          }
+        }
+      }
+    },
+    "Practice with this window": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 창으로 연습해 보세요"
+          }
+        }
+      }
+    },
+    "Press a key combination…": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "키 조합을 누르세요…"
+          }
+        }
+      }
+    },
+    "Press while dragging a window": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "창 드래그 중 입력"
+          }
+        }
+      }
+    },
+    "Quit %@": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 종료"
+          }
+        }
+      }
+    },
+    "Remove selected": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "선택 제거"
+          }
+        }
+      }
+    },
+    "Request Accessibility Permission…": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "손쉬운 사용 권한 다시 요청…"
+          }
+        }
+      }
+    },
+    "Request Permission…": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "권한 요청…"
+          }
+        }
+      }
+    },
+    "Reset All": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모두 기본값"
+          }
+        }
+      }
+    },
+    "Resize Window": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "창 크기 고정"
+          }
+        }
+      }
+    },
+    "Retry Update…": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "업데이트 다시 시도…"
+          }
+        }
+      }
+    },
+    "Right Half": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오른쪽 절반"
+          }
+        }
+      }
+    },
+    "Rows": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "행 (세로)"
+          }
+        }
+      }
+    },
+    "Screen edges": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "화면 가장자리"
+          }
+        }
+      }
+    },
+    "See the first-run walkthrough again": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처음 쓰는 방법을 다시 보려면"
+          }
+        }
+      }
+    },
+    "Settings…": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정…"
+          }
+        }
+      }
+    },
+    "Shortcuts": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단축키"
+          }
+        }
+      }
+    },
+    "Sizes": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "창 크기"
+          }
+        }
+      }
+    },
+    "Sizes you add here appear under “Custom” in the menu bar → Resize Window.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "여기서 추가하면 메뉴 막대 → 창 크기 고정 에 “사용자 지정” 섹션으로 나타납니다."
+          }
+        }
+      }
+    },
+    "Skip": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "건너뛰기"
+          }
+        }
+      }
+    },
+    "Snap Shortcuts": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스냅 단축키"
+          }
+        }
+      }
+    },
+    "Snap Window": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "창 스냅"
+          }
+        }
+      }
+    },
+    "Snap windows to a grid with a right-click while dragging": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "드래그 중 우클릭으로 창을 그리드에 스냅"
+          }
+        }
+      }
+    },
+    "Success! The window snapped to the grid": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "성공! 창이 그리드에 맞춰졌습니다"
+          }
+        }
+      }
+    },
+    "The edge gap applies only to sides touching the screen edge; the window gap applies to all sides. Edge and keyboard snapping use the same values.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가장자리 여백은 화면 끝에 닿는 변에만, 창 사이 간격은 모든 변에 적용됩니다. 가장자리 스냅·키보드 스냅에도 같은 값이 쓰입니다."
+          }
+        }
+      }
+    },
+    "This is a macOS system or standard app shortcut and can’t be used.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS 시스템·앱 기본 단축키라서 사용할 수 없습니다."
+          }
+        }
+      }
+    },
+    "Top Half": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위 절반"
+          }
+        }
+      }
+    },
+    "Top Left Quarter": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "왼쪽 위 1/4"
+          }
+        }
+      }
+    },
+    "Top Right Quarter": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오른쪽 위 1/4"
+          }
+        }
+      }
+    },
+    "Trackpad: press %@ while dragging": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "트랙패드: 드래그 중 %@"
+          }
+        }
+      }
+    },
+    "Turn on the oh-my-grid switch in the list.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "목록에서 oh-my-grid 스위치를 켭니다."
+          }
+        }
+      }
+    },
+    "Used to move other apps’ windows and read the gesture while you drag.\nNo screen recording or file access is used.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다른 앱의 창을 옮기고 드래그 중 제스처를 읽는 데 씁니다.\n화면 녹화·파일 접근 권한은 사용하지 않습니다."
+          }
+        }
+      }
+    },
+    "Version %@": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "버전 %@"
+          }
+        }
+      }
+    },
+    "Video": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영상"
+          }
+        }
+      }
+    },
+    "Waiting for permission…": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "권한을 기다리는 중…"
+          }
+        }
+      }
+    },
+    "When a right-click while dragging is awkward (trackpads), press this combination while dragging to turn on the grid. macOS system and standard app shortcuts (⌘Space, ⇧⌘4, ⌘C…) can’t be assigned.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "트랙패드처럼 드래그 중 우클릭이 어려울 때, 창을 드래그하는 도중 이 조합을 누르면 우클릭과 똑같이 그리드가 켜집니다. macOS 시스템·앱 기본 단축키(⌘Space, ⇧⌘4, ⌘C 등)는 지정할 수 없습니다."
+          }
+        }
+      }
+    },
+    "While dragging, click the right button once. (No need to hold it.)": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "드래그하는 도중 오른쪽 버튼을 한 번 클릭합니다. (계속 누르고 있지 않아도 됩니다)"
+          }
+        }
+      }
+    },
+    "Width": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "너비"
+          }
+        }
+      }
+    },
+    "You can now place any app’s window the same way.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이제 어떤 앱의 창이든 같은 방법으로 배치할 수 있습니다."
+          }
+        }
+      }
+    },
+    "You’re All Set": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "준비됐습니다"
+          }
+        }
+      }
+    },
+    "© 2026 Golden Rabbit · Free & open source": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "© 2026 Golden Rabbit · 무료 / 오픈소스"
+          }
+        }
+      }
+    },
+    "⚠️ Approval is required in System Settings › Login Items.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⚠️ macOS 설정에서 로그인 항목 승인이 필요합니다."
+          }
+        }
+      }
+    },
+    "⚠️ Couldn’t change login item: %@": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⚠️ 로그인 항목 변경 실패: %@"
+          }
+        }
+      }
+    },
+    "⚠️ Login item status is unavailable.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⚠️ 로그인 항목 상태를 확인할 수 없습니다."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

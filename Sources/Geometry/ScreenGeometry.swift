@@ -100,6 +100,19 @@ enum ScreenGeometry {
         }
     }
 
+    /// `bounds`의 가장자리에 닿는 변에만 바깥 여백을, 모든 변에 안쪽 간격을 적용한다.
+    /// 그리드 스냅·가장자리 스냅·키보드 스냅이 같은 규칙을 쓴다.
+    static func applyGaps(_ rect: CGRect, within bounds: CGRect, outerMargin m: CGFloat, innerGap g: CGFloat) -> CGRect {
+        var r = rect.insetBy(dx: g, dy: g)
+        if m > 0 {
+            if abs(rect.minX - bounds.minX) < 1 { r.origin.x += m; r.size.width -= m }
+            if abs(rect.maxX - bounds.maxX) < 1 { r.size.width -= m }
+            if abs(rect.minY - bounds.minY) < 1 { r.origin.y += m; r.size.height -= m }
+            if abs(rect.maxY - bounds.maxY) < 1 { r.size.height -= m }
+        }
+        return r.integral
+    }
+
     /// CG 전역(top-left) 사각형 → AppKit 전역(bottom-left) 사각형. 오버레이 윈도우 배치용.
     static func appKitRect(fromCG rect: CGRect) -> CGRect {
         CGRect(x: rect.minX,
