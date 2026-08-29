@@ -10,6 +10,8 @@ final class ShortcutRecorderView: NSView {
 
     private var hotkey: Hotkey
     private var recording = false
+    /// 클릭으로 포커스를 받은 경우에만 녹화를 시작한다(창이 열리며 자동으로 첫 응답자가 될 때는 녹화 안 함).
+    private var clickArmed = false
     private let label = NSTextField(labelWithString: "")
 
     init(hotkey: Hotkey) {
@@ -62,7 +64,8 @@ final class ShortcutRecorderView: NSView {
     override var acceptsFirstResponder: Bool { true }
 
     override func becomeFirstResponder() -> Bool {
-        recording = true
+        recording = clickArmed
+        clickArmed = false
         refresh()
         return true
     }
@@ -74,7 +77,15 @@ final class ShortcutRecorderView: NSView {
     }
 
     override func mouseDown(with event: NSEvent) {
-        window?.makeFirstResponder(self)
+        clickArmed = true
+        if window?.firstResponder === self {
+            // 이미 포커스가 있으면(자동 첫 응답자) 다시 만들어 녹화 상태로 전환.
+            recording = true
+            clickArmed = false
+            refresh()
+        } else {
+            window?.makeFirstResponder(self)
+        }
     }
 
     override func keyDown(with event: NSEvent) {

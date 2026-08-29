@@ -8,6 +8,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     private var permissionItem: NSMenuItem?
     private var hotkeyHintItem: NSMenuItem?
     private var updateItem: NSMenuItem?
+    private var resizeItem: NSMenuItem?
 
     override init() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -28,26 +29,11 @@ final class MenuBarController: NSObject, NSMenuDelegate {
 
         enabledItem = addItem(to: menu, title: "그리드 켜기", action: #selector(toggleEnabled))
 
-        // 창 크기 고정: 비율 선택 → 바꿀 창 클릭.
+        // 창 크기 고정: 비율 선택 → 바꿀 창 클릭. 사용자 지정 프리셋이 바뀔 수 있어 열 때마다 다시 만든다.
         let resizeItem = NSMenuItem(title: "창 크기 고정", action: nil, keyEquivalent: "")
-        let resizeMenu = NSMenu()
-        var tag = 0
-        for (gi, group) in WindowResizeController.presetGroups.enumerated() {
-            if gi > 0 { resizeMenu.addItem(.separator()) }
-            let header = NSMenuItem(title: group.title, action: nil, keyEquivalent: "")
-            header.isEnabled = false
-            resizeMenu.addItem(header)
-            for preset in group.presets {
-                let it = NSMenuItem(title: preset.label, action: #selector(armResize(_:)), keyEquivalent: "")
-                it.target = self
-                it.tag = tag          // WindowResizeController.presets(평탄화) 인덱스
-                it.indentationLevel = 1
-                resizeMenu.addItem(it)
-                tag += 1
-            }
-        }
-        resizeItem.submenu = resizeMenu
+        resizeItem.submenu = makeResizeMenu()
         menu.addItem(resizeItem)
+        self.resizeItem = resizeItem
 
         // 트랙패드용 안내(클릭 불가 정보 항목). 제목은 menuWillOpen에서 현재 단축키로 갱신.
         let hotkeyHint = NSMenuItem(title: "", action: nil, keyEquivalent: "")
@@ -75,9 +61,31 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         statusItem.menu = menu
     }
 
+    /// 프리셋 그룹(기본 + 사용자 지정)을 섹션으로 나눈 서브메뉴.
+    private func makeResizeMenu() -> NSMenu {
+        let resizeMenu = NSMenu()
+        var tag = 0
+        for (gi, group) in WindowResizeController.presetGroups.enumerated() {
+            if gi > 0 { resizeMenu.addItem(.separator()) }
+            let header = NSMenuItem(title: group.title, action: nil, keyEquivalent: "")
+            header.isEnabled = false
+            resizeMenu.addItem(header)
+            for preset in group.presets {
+                let it = NSMenuItem(title: preset.label, action: #selector(armResize(_:)), keyEquivalent: "")
+                it.target = self
+                it.tag = tag          // WindowResizeController.presets(평탄화) 인덱스
+                it.indentationLevel = 1
+                resizeMenu.addItem(it)
+                tag += 1
+            }
+        }
+        return resizeMenu
+    }
+
     // 메뉴를 열 때마다 토글 체크/권한 항목 상태를 갱신.
     func menuWillOpen(_ menu: NSMenu) {
         enabledItem?.state = Settings.shared.enabled ? .on : .off
+        resizeItem?.submenu = makeResizeMenu()
         let granted = AccessibilityPermission.isGranted
         permissionItem?.isHidden = granted
         // 권한 watcher 타임아웃 이후 뒤늦게 허용된 경우: 메뉴만 열어도 탭을 복구한다(이미 있으면 no-op).
@@ -103,7 +111,9 @@ final class MenuBarController: NSObject, NSMenuDelegate {
     }
 
     @objc private func armResize(_ sender: NSMenuItem) {
-        let preset = WindowResizeController.presets[sender.tag]
+        let presets = WindowResizeController.presets
+        guard sender.tag < presets.count else { return }
+        let preset = presets[sender.tag]
         WindowResizeController.shared.arm(size: preset.size, label: preset.label)
     }
 

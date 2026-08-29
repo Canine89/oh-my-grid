@@ -17,6 +17,19 @@ final class Settings {
         static let hotkeyKeyCode = "gridHotkeyKeyCode"
         static let hotkeyMods = "gridHotkeyMods"
         static let onboardingCompleted = "onboardingCompleted"
+        static let customPresets = "customResizePresets"
+    }
+
+    /// 사용자 지정 창 크기 프리셋(창 크기 고정 메뉴의 "사용자 지정" 섹션). JSON 으로 저장.
+    var customPresets: [CustomPreset] {
+        get {
+            guard let data = defaults.data(forKey: Keys.customPresets),
+                  let list = try? JSONDecoder().decode([CustomPreset].self, from: data) else { return [] }
+            return list
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) { defaults.set(data, forKey: Keys.customPresets) }
+        }
     }
 
     /// 첫 실행 온보딩을 끝냈거나 닫았는지. 기본 false.
@@ -109,4 +122,19 @@ final class Settings {
 extension Notification.Name {
     /// 그리드 설정(열/행/활성)이 바뀌었을 때.
     static let gridSettingsChanged = Notification.Name("com.goldenrabbit.ohmygrid.settingsChanged")
+}
+
+/// 사용자 지정 창 크기 프리셋.
+struct CustomPreset: Codable, Identifiable, Hashable {
+    var id = UUID()
+    var name: String
+    var width: Int
+    var height: Int
+
+    /// 메뉴 표시용 라벨. 이름이 비어 있으면 크기만.
+    var label: String {
+        let size = "\(width) × \(height)"
+        let n = name.trimmingCharacters(in: .whitespaces)
+        return n.isEmpty || n == size ? size : "\(n) · \(size)"
+    }
 }

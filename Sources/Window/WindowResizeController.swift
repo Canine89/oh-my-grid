@@ -19,7 +19,7 @@ final class WindowResizeController {
         let title: String
         let presets: [Preset]
     }
-    static let presetGroups: [PresetGroup] = [
+    static let builtinGroups: [PresetGroup] = [
         PresetGroup(title: "영상", presets: [
             Preset(label: "4:3 · 720 × 480",    size: CGSize(width: 720,  height: 480)),
             Preset(label: "16:9 · 1280 × 720",  size: CGSize(width: 1280, height: 720)),
@@ -34,11 +34,22 @@ final class WindowResizeController {
             Preset(label: "2880 × 1800", size: CGSize(width: 2880, height: 1800)),
         ]),
     ]
+    /// 기본 그룹 + 사용자 지정 그룹(설정에서 편집, 비어 있으면 생략). 메뉴는 열 때마다 이걸로 다시 만든다.
+    static var presetGroups: [PresetGroup] {
+        let custom = Settings.shared.customPresets
+        guard !custom.isEmpty else { return builtinGroups }
+        let group = PresetGroup(title: "사용자 지정", presets: custom.map {
+            Preset(label: $0.label, size: CGSize(width: $0.width, height: $0.height))
+        })
+        return builtinGroups + [group]
+    }
     /// 그룹을 평탄화한 목록. 메뉴 항목 `tag`가 이 배열의 인덱스다.
-    static let presets: [Preset] = presetGroups.flatMap(\.presets)
+    static var presets: [Preset] { presetGroups.flatMap(\.presets) }
 
     private(set) var pendingSize: CGSize?
-    var isArmed: Bool { pendingSize != nil }
+    /// 크기 가져오기 모드: 다음 클릭한 창의 크기를 이 핸들러로 넘긴다(리사이즈는 하지 않음).
+    private var captureHandler: ((CGSize) -> Void)?
+    var isArmed: Bool { pendingSize != nil || captureHandler != nil }
     private var hud: ResizeHUDWindow?
 
     // 호버 강조 상태.
@@ -62,9 +73,25 @@ final class WindowResizeController {
         glog("창 크기 고정 무장 \(Int(size.width))x\(Int(size.height))")
     }
 
+    /// 크기 가져오기 무장 — 다음 클릭한 창의 현재 크기를 `handler`로 전달한다(설정의 프리셋 추가용).
+    func armCapture(_ handler: @escaping (CGSize) -> Void) {
+        guard AccessibilityPermission.isGranted else {
+            PermissionNotice.showDenied()
+            AccessibilityPermission.requestAndOpenSettings()
+            return
+        }
+        pendingSize = nil
+        captureHandler = handler
+        hoveredWindow = nil
+        MouseEventTap.shared.setTracksMouseMoved(true)
+        showHUD(text: "크기를 가져올 창을 클릭하세요   (Esc 취소)")
+        glog("창 크기 가져오기 무장")
+    }
+
     /// 무장 해제(성공/취소 공통).
     func cancel() {
         pendingSize = nil
+        captureHandler = nil
         hoveredWindow = nil
         hoverToken &+= 1
         MouseEventTap.shared.setTracksMouseMoved(false)
@@ -100,16 +127,26 @@ final class WindowResizeController {
     func applyAt(point: CGPoint) {
         let target = hoveredWindow
         defer { cancel() }
-        guard let size = pendingSize, AccessibilityPermission.isGranted else { return }
+        guard isArmed, AccessibilityPermission.isGranted else { return }
         hideHighlight()   // 강조 오버레이가 AX 조회를 가리지 않도록 먼저 내림.
         // 호버로 잡아둔 창을 우선 사용(강조 오버레이 간섭 회피), 없으면 위치로 조회.
         guard let window = target ?? AXWindowController.shared.windowUnderCursor(cgPoint: point) else {
             glog("창 크기 고정: 클릭 위치에 창 없음")
             return
         }
-        // 우리 앱 자신의 창(HUD 등)은 건드리지 않는다.
+        // 우리 앱 자신의 창(HUD·설정 등)은 건드리지 않는다.
         var pid: pid_t = 0
         if AXUIElementGetPid(window, &pid) == .success, pid == getpid() { return }
+
+        // 크기 가져오기 모드: 리사이즈 대신 현재 크기를 넘기고 끝.
+        if let handler = captureHandler {
+            if let frame = AXWindowController.shared.frame(of: window) {
+                glog("창 크기 가져오기 \(Int(frame.width))x\(Int(frame.height))")
+                handler(frame.size)
+            }
+            return
+        }
+        guard let size = pendingSize else { return }
 
         // 현재 좌상단(origin) 유지 + 가시 영역 안으로 클램프.
         let origin = AXWindowController.shared.frame(of: window)?.origin ?? point
