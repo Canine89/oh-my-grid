@@ -232,6 +232,19 @@ if [ "$PUBLISH" = "1" ]; then
 ---
 설치: [INSTALL.md](https://github.com/$REPO/blob/main/INSTALL.md) 참고. 이미 설치한 사용자는 앱이 자동으로 업데이트합니다."
   fi
+  # Homebrew 캐스크(canine89/tap) 버전·sha256 갱신. 이걸 빼먹으면 brew 사용자는 영원히 옛 버전에 머문다(1.6.3→1.9.1 사이 실제 발생).
+  TAP_DIR="$(brew --repository canine89/tap 2>/dev/null || true)"
+  CASK="$TAP_DIR/Casks/oh-my-grid.rb"
+  if [ -f "$CASK" ]; then
+    echo "▸ Homebrew 캐스크 갱신 ($CASK)"
+    DMG_SHA="$(shasum -a 256 "$DMG" | cut -d' ' -f1)"
+    sed -i '' -e "s/version \"[^\"]*\"/version \"$VERSION\"/" -e "s/sha256 \"[0-9a-f]*\"/sha256 \"$DMG_SHA\"/" "$CASK"
+    git -C "$TAP_DIR" add Casks/oh-my-grid.rb
+    git -C "$TAP_DIR" commit -q -m "Update oh-my-grid to $VERSION" || true
+    git -C "$TAP_DIR" push -q && echo "  캐스크 $VERSION ✓"
+  else
+    echo "⚠️ canine89/tap 이 이 Mac에 없어 캐스크를 못 올렸습니다: brew tap canine89/tap 후 다시 --publish"
+  fi
   echo "✅ 게시 완료: $TAG"
 else
   echo
