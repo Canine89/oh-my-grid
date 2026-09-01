@@ -6,24 +6,18 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.9.0</title>
-      <pubDate>Sat, 29 Aug 2026 15:30:00 +0000</pubDate>
-      <sparkle:version>21</sparkle:version>
-      <sparkle:shortVersionString>1.9.0</sparkle:shortVersionString>
+      <title>1.9.1</title>
+      <pubDate>Tue, 01 Sep 2026 22:58:09 +0000</pubDate>
+      <sparkle:version>23</sparkle:version>
+      <sparkle:shortVersionString>1.9.1</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.9.0</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.9.1</h2>
 <ul>
-<li>**키보드 스냅 단축키** — 마우스 없이 맨 앞 창을 배치: `⌃⌥←/→/↑/↓` 절반, `⌃⌥U/I/J/K` 1/4, `⌃⌥↩` 최대화, `⌃⌥C` 가운데. 실행 시 목표 영역이 잠깐 비춰지고, 설정 → 단축키에서 조합 변경·비활성화 가능(다른 동작·그리드 단축키와 겹치면 거부). 메뉴 막대 → **창 스냅**에서도 실행.</li>
-<li>**영어 지원** — 앱 전체를 영어/한국어로 로컬라이즈(String Catalog). 시스템 언어가 한국어면 한국어, 그 외에는 영어로 표시. README에 영어 소개 추가.</li>
-<li>여백(가장자리·창 사이) 규칙을 그리드·가장자리·키보드 스냅이 공통으로 사용.</li>
-<li>**설정 창 전면 재설계** — 탭(일반 / 그리드 / 단축키 / 창 크기 / 예외 앱 / 정보)으로 나누고 macOS 표준 그룹 폼 스타일로 교체. 모든 값은 바꾸는 즉시 반영되어 **[적용] 버튼이 사라짐**.</li>
-<li>그리드 탭에 **라이브 미리보기** — 열·행·여백을 바꾸면 축소 화면에 바로 반영.</li>
-<li>그동안 UI가 없던 **여백 설정 노출** — 화면 가장자리 여백(0–48px)·창 사이 간격(0–32px) 슬라이더. 그리드 스냅과 가장자리 절반 스냅 모두에 적용.</li>
-<li>**사용자 지정 창 크기 프리셋** — 설정 → 창 크기에서 이름·너비·높이를 편집하고, **창 클릭으로 가져오기**로 아무 창의 현재 크기를 프리셋으로 저장. 메뉴 막대 → 창 크기 고정에 "사용자 지정" 섹션으로 표시.</li>
-<li>예외 앱 목록에 앱 아이콘·이름 표시, **실행 중인 앱에서 선택**·**앱을 끌어다 놓기**로 추가 가능.</li>
-<li>정보 탭 추가 — 버전, 업데이트 확인, GitHub·문의·변경 이력 링크.</li>
+<li>**표시 언어 설정** — 시스템 언어와 무관하게 **영어가 기본**. 설정 → 일반 → Language 에서 English / 한국어를 고르면 재시작 없이 메뉴 막대·설정·시작 가이드가 즉시 바뀜.</li>
+<li>시작 가이드 첫 화면에 **언어 선택** 단계 추가 — 영어로 시작하고, 한국어 카드를 누르면 가이드부터 바로 한국어로 전환.</li>
+<li>스크린샷 모드 런치 인자 `-appLanguage ko` 로 언어 지정 가능.</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.9.0/oh-my-grid-1.9.0.zip" type="application/octet-stream" sparkle:edSignature="44X0Ni/iux1ErLFfcgp48iT9Xec9p/uRBerRrLcSwkWwYay1bABNiUPooG8+JR1ehthFMamPKz3UyDk7Y/WXBA==" length="3606826" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.9.1/oh-my-grid-1.9.1.zip" type="application/octet-stream" sparkle:edSignature="yMR4P4McPcZuCRQ2ACLCwF4WiWAoehbTVPHmX9empqRWL+DtqS5m6qwFZOA5UgUdKVbdwN3Ol1mV+oS62/9LBQ==" length="4843168" />
     </item>
   </channel>
 </rss>
