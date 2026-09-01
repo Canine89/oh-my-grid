@@ -162,7 +162,21 @@ fi
 echo "▸ EdDSA 서명 + appcast.xml 생성"
 SIGN_UPDATE="$(find "$DD" "$HOME/Library/Developer/Xcode/DerivedData" -name sign_update -path '*sparkle*' -type f 2>/dev/null | head -1)"
 [ -x "$SIGN_UPDATE" ] || { echo "✗ sign_update 도구를 못 찾음 (Sparkle 패키지 해석 필요)"; exit 1; }
-SIG_ATTRS="$("$SIGN_UPDATE" "$ZIP")"
+# 키체인의 Sparkle 개인키가 앱에 박힌 SUPublicEDKey 와 같은 쌍인지 확인. 다른 앱(opensnap 등)이
+# 같은 키체인 계정(ed25519)에 새 키를 만들면 여기서 잡힌다 — 안 맞는 키로 서명하면 모든 기존
+# 설치본에서 "improperly signed" 오류가 난다(1.9.1에서 실제 발생).
+GENERATE_KEYS="$(dirname "$SIGN_UPDATE")/generate_keys"
+EXPECTED_PUB="$(/usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$APP/Contents/Info.plist")"
+ACTUAL_PUB="$("$GENERATE_KEYS" -p ${OMOG_SPARKLE_ACCOUNT:+--account "$OMOG_SPARKLE_ACCOUNT"} 2>/dev/null || true)"
+if [ "$EXPECTED_PUB" != "$ACTUAL_PUB" ]; then
+  echo "✗ Sparkle 서명키 불일치 — 이 키로 서명하면 기존 설치본이 업데이트를 거부합니다."
+  echo "  앱 SUPublicEDKey : $EXPECTED_PUB"
+  echo "  키체인 공개키     : ${ACTUAL_PUB:-없음}"
+  echo "  → 원래 키를 'generate_keys --account <이름> -f <백업파일>' 로 별도 계정에 넣고"
+  echo "    OMOG_SPARKLE_ACCOUNT=<이름> 으로 실행하거나, 키를 교체하려면 project.yml 의 SUPublicEDKey 를 바꾸세요."
+  exit 1
+fi
+SIG_ATTRS="$("$SIGN_UPDATE" ${OMOG_SPARKLE_ACCOUNT:+--account "$OMOG_SPARKLE_ACCOUNT"} "$ZIP")"
 ZIP_URL="https://github.com/$REPO/releases/download/v$VERSION/oh-my-grid-$VERSION.zip"
 PUBDATE="$(date -u "+%a, %d %b %Y %H:%M:%S +0000")"
 
