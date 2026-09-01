@@ -6,6 +6,9 @@ import Combine
 @MainActor
 final class SettingsStore: ObservableObject {
     // 일반
+    @Published var language: AppLanguage { didSet { guard !loading else { return }; LanguageManager.shared.set(language) } }
+    /// 현재 탭. 언어 전환으로 뷰 트리가 다시 만들어져도 유지되도록 뷰가 아니라 여기 둔다.
+    @Published var tab: SettingsView.Tab = .general
     @Published var enabled: Bool { didSet { guard !loading else { return }; Settings.shared.enabled = enabled; notify() } }
     @Published var edgeSnap: Bool { didSet { guard !loading else { return }; Settings.shared.edgeSnapEnabled = edgeSnap; notify() } }
     @Published var launchAtLogin: Bool
@@ -40,6 +43,7 @@ final class SettingsStore: ObservableObject {
 
     init() {
         let s = Settings.shared
+        language = s.language
         enabled = s.enabled
         edgeSnap = s.edgeSnapEnabled
         launchAtLogin = LoginItemController.isEnabled
@@ -60,6 +64,7 @@ final class SettingsStore: ObservableObject {
         loading = true
         defer { loading = false }
         let s = Settings.shared
+        language = s.language
         enabled = s.enabled
         edgeSnap = s.edgeSnapEnabled
         columns = s.columns

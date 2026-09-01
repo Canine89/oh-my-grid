@@ -1,7 +1,8 @@
 import AppKit
 import SwiftUI
 
-/// 첫 실행 온보딩 창. 권한 상태를 실시간 반영하고, 연습 화면에서는 이 창 자체가 그리드 스냅 대상이 된다.
+/// 첫 실행 온보딩 창. 언어 선택 → 권한 → 연습 → 마무리. 권한 상태를 실시간 반영하고,
+/// 연습 화면에서는 이 창 자체가 그리드 스냅 대상이 된다.
 @MainActor
 final class OnboardingWindowController: NSObject, NSWindowDelegate {
     static let shared = OnboardingWindowController()
@@ -33,7 +34,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         }
         self.model = model
 
-        let host = NSHostingView(rootView: OnboardingView(model: model))
+        let host = NSHostingView(rootView: LocalizedRoot { OnboardingView(model: model) })
         // 연습 화면에서 그리드로 크기가 바뀌어야 하므로 resizable 이어야 한다(AX 리사이즈 허용).
         let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 480),
                            styleMask: [.titled, .closable, .miniaturizable, .resizable],
@@ -65,6 +66,10 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         })
         observers.append(nc.addObserver(forName: .gridSnapCommitted, object: nil, queue: .main) { [weak self] note in
             MainActor.assumeIsolated { self?.handleSnap(note) }
+        })
+        observers.append(nc.addObserver(forName: .appLanguageChanged, object: nil, queue: .main) { [weak self] _ in
+            // 본문은 LocalizedRoot 가 다시 그린다. 창 제목만 여기서.
+            MainActor.assumeIsolated { self?.window?.title = String(localized: "Getting Started with \(Brand.name)") }
         })
         if !AccessibilityPermission.isGranted { startPermissionPoll() }
     }

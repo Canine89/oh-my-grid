@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 첫 실행 온보딩: 권한 → 제스처 연습 → 마무리 설정.
+/// 첫 실행 온보딩: 언어 → 권한 → 제스처 연습 → 마무리 설정.
 struct OnboardingView: View {
     @ObservedObject var model: OnboardingModel
 
@@ -10,6 +10,7 @@ struct OnboardingView: View {
         VStack(spacing: 0) {
             Group {
                 switch model.page {
+                case .language: LanguagePage(model: model)
                 case .permission: PermissionPage(model: model)
                 case .practice: PracticePage(model: model)
                 case .finish: FinishPage(model: model)
@@ -35,10 +36,16 @@ struct OnboardingView: View {
         HStack {
             pageDots
             Spacer()
-            if model.page == .permission {
+            if model.page == .language {
+                EmptyView()
+            } else if model.page == .permission {
+                Button("Back") { model.back() }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
                 Button("Skip") { model.next() }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
+                    .padding(.leading, 12)
             } else if model.page == .practice {
                 Button("Back") { model.back() }
                     .buttonStyle(.plain)
@@ -62,6 +69,10 @@ struct OnboardingView: View {
     @ViewBuilder
     private var primaryButton: some View {
         switch model.page {
+        case .language:
+            Button("Continue") { model.next() }
+                .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
         case .permission:
             Button("Next") { model.next() }
                 .keyboardShortcut(.defaultAction)
@@ -160,6 +171,66 @@ private struct StatusPill: View {
         .background(Capsule().fill(Color(nsColor: .controlBackgroundColor)))
         .overlay(Capsule().stroke(Color.secondary.opacity(0.2)))
         .animation(.easeInOut(duration: 0.2), value: ok)
+    }
+}
+
+// MARK: - 0. 언어
+
+/// 첫 화면. 영어가 기본이라 영어로 시작하고, 한국어 카드를 누르면 이 가이드부터 즉시 한국어로 바뀐다.
+private struct LanguagePage: View {
+    @ObservedObject var model: OnboardingModel
+
+    var body: some View {
+        VStack(spacing: 22) {
+            PageHeader(symbol: "globe",
+                       title: "Welcome to \(Brand.name)",
+                       subtitle: "Choose the language for the menu bar, settings, and this guide. You can change it anytime in Settings → General.")
+
+            HStack(spacing: 14) {
+                ForEach(AppLanguage.allCases) { lang in
+                    LanguageCard(language: lang, selected: model.language == lang) {
+                        model.language = lang
+                    }
+                }
+            }
+
+            Text("Prefer Korean? Pick 한국어 — this guide switches right away.")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            Spacer(minLength: 0)
+        }
+    }
+}
+
+private struct LanguageCard: View {
+    let language: AppLanguage
+    let selected: Bool
+    let action: () -> Void
+
+    private var accent: Color { Color(nsColor: Brand.accent) }
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 20))
+                    .foregroundStyle(selected ? accent : Color.secondary.opacity(0.5))
+                Text(verbatim: language.nativeName)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(.primary)
+            }
+            .frame(width: 170, height: 96)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(selected ? accent.opacity(0.12) : Color(nsColor: .controlBackgroundColor)))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(selected ? accent : Color.secondary.opacity(0.25), lineWidth: selected ? 2 : 1))
+            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .animation(.easeInOut(duration: 0.15), value: selected)
     }
 }
 

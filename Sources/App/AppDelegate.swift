@@ -13,6 +13,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         setupMainMenu()
         menuBar = MenuBarController()
+        NotificationCenter.default.addObserver(forName: .appLanguageChanged, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.setupMainMenu() }
+        }
 
         // 맨 앞 앱 추적 시작(예외 목록 판정용).
         ActiveAppMonitor.shared.start()

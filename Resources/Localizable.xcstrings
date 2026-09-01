@@ -161,6 +161,16 @@
         }
       }
     },
+    "Applies to the menu bar, settings, and the getting-started guide. English is the default; 한국어 is also available.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메뉴 막대, 설정, 시작 가이드에 적용됩니다. 기본은 English이며 한국어를 고를 수 있습니다."
+          }
+        }
+      }
+    },
     "Back": {
       "localizations": {
         "ko": {
@@ -291,6 +301,16 @@
         }
       }
     },
+    "Choose the language for the menu bar, settings, and this guide. You can change it anytime in Settings → General.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메뉴 막대, 설정, 이 가이드에 사용할 언어를 고르세요. 설정 → 일반에서 언제든 바꿀 수 있습니다."
+          }
+        }
+      }
+    },
     "Click a window to capture its size   (Esc to cancel)": {
       "localizations": {
         "ko": {
@@ -347,6 +367,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "문의하기"
+          }
+        }
+      }
+    },
+    "Continue": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "계속"
           }
         }
       }
@@ -641,6 +671,16 @@
         }
       }
     },
+    "Language": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "언어"
+          }
+        }
+      }
+    },
     "Launch at Login": {
       "localizations": {
         "ko": {
@@ -837,6 +877,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "이 창으로 연습해 보세요"
+          }
+        }
+      }
+    },
+    "Prefer Korean? Pick 한국어 — this guide switches right away.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영어로 보려면 English를 선택하세요 — 바로 바뀝니다."
           }
         }
       }
@@ -1167,6 +1217,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "권한을 기다리는 중…"
+          }
+        }
+      }
+    },
+    "Welcome to %@": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@에 오신 것을 환영합니다"
           }
         }
       }

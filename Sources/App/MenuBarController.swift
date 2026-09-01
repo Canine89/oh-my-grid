@@ -20,7 +20,14 @@ final class MenuBarController: NSObject, NSMenuDelegate {
                                    accessibilityDescription: String(localized: "\(Brand.name) grid"))
             button.image?.isTemplate = true
         }
+        buildMenu()
+        // 표시 언어가 바뀌면 제목을 전부 다시 만든다.
+        NotificationCenter.default.addObserver(forName: .appLanguageChanged, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.buildMenu() }
+        }
+    }
 
+    private func buildMenu() {
         let menu = NSMenu()
         menu.delegate = self
         let header = NSMenuItem(title: "\(Brand.name) · \(Brand.tagline)", action: nil, keyEquivalent: "")

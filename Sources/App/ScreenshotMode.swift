@@ -3,7 +3,7 @@ import SwiftUI
 
 /// 스토어 스크린샷 촬영용 모드. `-OMGScreenshot settings|onboarding|overlay` 런치 인자가
 /// 있으면 메뉴바·이벤트 탭·권한 요청 등 평소 기동을 전부 생략하고 해당 창만 띄운다.
-/// (UserDefaults는 `-키 값` 런치 인자를 argument domain으로 읽는다.)
+/// (UserDefaults는 `-키 값` 런치 인자를 argument domain으로 읽는다.) 언어는 `-appLanguage ko`.
 @MainActor
 enum ScreenshotMode {
     private static var window: NSWindow?
@@ -41,8 +41,9 @@ enum ScreenshotMode {
         default: tab = .general
         }
         let s = SettingsStore()
+        s.tab = tab
         store = s
-        let host = NSHostingView(rootView: SettingsView(store: s, initialTab: tab))
+        let host = NSHostingView(rootView: LocalizedRoot { SettingsView(store: s) })
         let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 520),
                            styleMask: [.titled, .closable, .miniaturizable],
                            backing: .buffered, defer: false)

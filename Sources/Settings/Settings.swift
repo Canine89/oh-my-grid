@@ -20,6 +20,13 @@ final class Settings {
         static let customPresets = "customResizePresets"
         static let keyboardSnapEnabled = "keyboardSnapEnabled"
         static let snapHotkeys = "snapHotkeys"
+        static let language = "appLanguage"
+    }
+
+    /// 표시 언어. 기본 영어(시스템 언어와 무관). 런치 인자 `-appLanguage ko`로도 지정 가능(스크린샷용).
+    var language: AppLanguage {
+        get { defaults.string(forKey: Keys.language).flatMap(AppLanguage.init(rawValue:)) ?? .english }
+        set { defaults.set(newValue.rawValue, forKey: Keys.language) }
     }
 
     /// 키보드 스냅 단축키 활성 여부. 기본 true.

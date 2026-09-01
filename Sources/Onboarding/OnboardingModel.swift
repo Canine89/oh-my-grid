@@ -1,11 +1,11 @@
 import AppKit
 import Combine
 
-/// 온보딩 3화면의 상태. 뷰(SwiftUI)와 윈도우 컨트롤러가 공유한다.
+/// 온보딩 4화면의 상태. 뷰(SwiftUI)와 윈도우 컨트롤러가 공유한다.
 @MainActor
 final class OnboardingModel: ObservableObject {
     enum Page: Int, CaseIterable {
-        case permission, practice, finish
+        case language, permission, practice, finish
     }
 
     /// 마무리 화면의 그리드 크기 선택지.
@@ -24,7 +24,11 @@ final class OnboardingModel: ObservableObject {
         }
     }
 
-    @Published var page: Page = .permission
+    @Published var page: Page = .language
+    /// 표시 언어. 고르는 즉시 앱 전체(이 가이드 포함)가 바뀐다.
+    @Published var language: AppLanguage = LanguageManager.shared.language {
+        didSet { LanguageManager.shared.set(language) }
+    }
     @Published var permissionGranted: Bool = AccessibilityPermission.isGranted
     @Published var snapSucceeded = false
     @Published var launchAtLogin: Bool = LoginItemController.isEnabled

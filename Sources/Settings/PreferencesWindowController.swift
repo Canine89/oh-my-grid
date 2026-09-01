@@ -36,7 +36,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
         store.openOnboarding = { OnboardingWindowController.shared.show() }
         self.store = store
 
-        let host = NSHostingView(rootView: SettingsView(store: store))
+        let host = NSHostingView(rootView: LocalizedRoot { SettingsView(store: store) })
         let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 520),
                            styleMask: [.titled, .closable, .miniaturizable],
                            backing: .buffered, defer: false)
@@ -62,6 +62,13 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
         observers.append(nc.addObserver(forName: .gridSettingsChanged, object: nil, queue: .main) { [weak self] _ in
             // 메뉴 토글·온보딩 등 외부 변경 반영(자기 자신이 보낸 것도 값이 같아 무해).
             MainActor.assumeIsolated { self?.store?.reload() }
+        })
+        observers.append(nc.addObserver(forName: .appLanguageChanged, object: nil, queue: .main) { [weak self] _ in
+            // 본문은 LocalizedRoot 가 다시 그린다. 창 제목만 여기서.
+            MainActor.assumeIsolated {
+                self?.window?.title = String(localized: "\(Brand.name) Settings")
+                self?.store?.reload()
+            }
         })
         if !AccessibilityPermission.isGranted { startPermissionPoll() }
     }

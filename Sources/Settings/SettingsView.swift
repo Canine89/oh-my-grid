@@ -6,15 +6,9 @@ struct SettingsView: View {
     enum Tab: Hashable { case general, grid, hotkey, presets, exclusion, about }
 
     @ObservedObject var store: SettingsStore
-    @State private var tab: Tab
-
-    init(store: SettingsStore, initialTab: Tab = .general) {
-        self.store = store
-        _tab = State(initialValue: initialTab)
-    }
 
     var body: some View {
-        TabView(selection: $tab) {
+        TabView(selection: $store.tab) {
             GeneralTab(store: store)
                 .tabItem { Label("General", systemImage: "switch.2") }
                 .tag(Tab.general)
@@ -51,6 +45,15 @@ private struct GeneralTab: View {
 
     var body: some View {
         Form {
+            Section {
+                Picker("Language", selection: $store.language) {
+                    ForEach(AppLanguage.allCases) { lang in
+                        Text(verbatim: lang.nativeName).tag(lang)
+                    }
+                }
+                Text("Applies to the menu bar, settings, and the getting-started guide. English is the default; 한국어 is also available.")
+                    .settingsCaption()
+            }
             Section {
                 Toggle("Grid Gesture", isOn: $store.enabled)
                 Text("Click the right button once while dragging a window to turn on the grid. Right-click again or press Esc to cancel.")

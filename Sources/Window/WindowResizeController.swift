@@ -19,7 +19,8 @@ final class WindowResizeController {
         let title: String
         let presets: [Preset]
     }
-    static let builtinGroups: [PresetGroup] = [
+    /// 제목이 로컬라이즈되므로 캐시하지 않는다(표시 언어가 바뀔 수 있다).
+    static var builtinGroups: [PresetGroup] { [
         PresetGroup(title: String(localized: "Video"), presets: [
             Preset(label: "4:3 · 720 × 480",    size: CGSize(width: 720,  height: 480)),
             Preset(label: "16:9 · 1280 × 720",  size: CGSize(width: 1280, height: 720)),
@@ -33,7 +34,7 @@ final class WindowResizeController {
             Preset(label: "2560 × 1600", size: CGSize(width: 2560, height: 1600)),
             Preset(label: "2880 × 1800", size: CGSize(width: 2880, height: 1800)),
         ]),
-    ]
+    ] }
     /// 기본 그룹 + 사용자 지정 그룹(설정에서 편집, 비어 있으면 생략). 메뉴는 열 때마다 이걸로 다시 만든다.
     static var presetGroups: [PresetGroup] {
         let custom = Settings.shared.customPresets
