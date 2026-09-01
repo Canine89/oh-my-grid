@@ -449,7 +449,9 @@ private struct AboutTab: View {
                 Text("Version \(SettingsStore.versionString)").foregroundStyle(.secondary).monospacedDigit()
                 Text(Brand.tagline).settingsCaption()
             }
+            #if !MAS
             Button("Check for Updates…") { store.checkForUpdates?() }
+            #endif
             HStack(spacing: 16) {
                 Link("GitHub", destination: URL(string: "https://github.com/Canine89/oh-my-grid")!)
                 Link("Contact", destination: URL(string: "mailto:hgpark@goldenrabbit.co.kr")!)

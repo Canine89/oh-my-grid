@@ -1,3 +1,4 @@
+#if !MAS
 import AppKit
 import Sparkle
 
@@ -52,3 +53,4 @@ final class UpdaterController: NSObject, SPUUpdaterDelegate {
         lastFailure = error
     }
 }
+#endif

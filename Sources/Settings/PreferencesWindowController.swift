@@ -21,7 +21,9 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
 
     private func build() {
         let store = SettingsStore()
+        #if !MAS
         store.checkForUpdates = { UpdaterController.shared.checkForUpdates(nil) }
+        #endif
         store.captureWindowSize = { [weak self] handler in
             // 설정 창이 클릭 대상을 가리지 않도록 잠시 뒤로 보낸 뒤 캡처 모드로.
             self?.window?.orderBack(nil)
