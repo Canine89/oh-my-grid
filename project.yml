@@ -40,7 +40,7 @@ targets:
         NSHumanReadableCopyright: "Copyright © 2026 Golden Rabbit"
         # Sparkle 자동 업데이트
         SUFeedURL: https://raw.githubusercontent.com/Canine89/oh-my-grid/main/appcast.xml
-        SUPublicEDKey: iWBHueR8+zpSgvCBOBj1RUNqJbSGpQHkSyuCcMFeDoM=
+        SUPublicEDKey: XxOSs5M6eh6sZZU72846xGyexQCnt9X4ylmnEKZNO7s=
         SUEnableAutomaticChecks: true
         SUScheduledCheckInterval: 86400                # 하루 1회 백그라운드 확인
     settings:
