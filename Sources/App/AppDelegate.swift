@@ -8,6 +8,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let permissionWatchMaxDuration: TimeInterval = 300
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // 스토어 스크린샷 촬영 모드 — 지정한 창만 띄우고 평소 기동은 생략.
+        if ScreenshotMode.activateIfRequested() { return }
+
         setupMainMenu()
         menuBar = MenuBarController()
 

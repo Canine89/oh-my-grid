@@ -34,7 +34,13 @@ struct SettingsView: View {
                 .tabItem { Label("About", systemImage: "info.circle") }
                 .tag(Tab.about)
         }
-        .frame(width: 560, height: 520)
+        .frame(width: Self.width, height: 520)
+    }
+
+    /// 창 폭. 스크린샷 촬영 모드에서만 `-OMGScreenshotWidth`로 넓혀 탭 접힘을 막는다.
+    private static var width: CGFloat {
+        let w = UserDefaults.standard.double(forKey: "OMGScreenshotWidth")
+        return w > 0 ? CGFloat(w) : 560
     }
 }
 
