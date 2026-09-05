@@ -6,16 +6,23 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.9.2</title>
-      <pubDate>Tue, 01 Sep 2026 23:12:33 +0000</pubDate>
-      <sparkle:version>24</sparkle:version>
-      <sparkle:shortVersionString>1.9.2</sparkle:shortVersionString>
+      <title>1.9.3</title>
+      <pubDate>Sat, 05 Sep 2026 03:33:19 +0000</pubDate>
+      <sparkle:version>25</sparkle:version>
+      <sparkle:shortVersionString>1.9.3</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.9.2</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.9.3</h2>
 <ul>
-<li>**자동 업데이트 서명키 교체** — 1.9.1 업데이트가 "improperly signed" 오류로 실패하던 문제. 1.9.1 이하를 쓰고 있다면 이번 한 번만 `brew upgrade --cask oh-my-grid` 또는 DMG로 직접 설치해 주세요. 이후부터는 앱 안에서 자동 업데이트됩니다.</li>
+<li>작은 그리드 칸과 큰 여백을 조합할 때 발생하던 잘못된 좌표와 크래시 수정. 창 간격은 인접 창 사이 전체 거리로 적용하고 작은 칸에서는 여백을 자동 축소.</li>
+<li>창 이동·크기 변경의 실제 결과를 확인한 뒤 성공 표시. 권한 부족, 지원하지 않는 창, 앱 응답 지연, 크기 제한 안내.</li>
+<li>접근성 조회·조작을 전용 작업 큐로 이동하고 타임아웃과 취소 처리 추가.</li>
+<li>창 크기 지정 클릭의 누름·해제 짝 처리, 단축키 기록 중 전역 스냅 중지, 양방향 단축키 충돌 검증.</li>
+<li>사용자 지정 크기를 1~16384포인트로 검증하고 잘못된 기존 프리셋 제외.</li>
+<li>설정 메뉴를 왼쪽 목록으로 전환하고 개인정보 처리방침 링크 추가. 실제 권한 상태만 표시.</li>
+<li>온보딩 스크롤 및 권한 목록 복구 안내, 자동 실행 실패 안내 유지, 4:3 프리셋 비율 정정.</li>
+<li>Release 회귀 테스트·번들 검증 스크립트 추가.</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.9.2/oh-my-grid-1.9.2.zip" type="application/octet-stream" sparkle:edSignature="q96ncnJJ9g1LEwQe6yO6lRSbH8IhipS5kxCrF7quxziKBk3/Z1myUTjpdUGilewxElTK3TnwS2LV8qvjdxOHAQ==" length="4843126" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.9.3/oh-my-grid-1.9.3.zip" type="application/octet-stream" sparkle:edSignature="yoBndhIBq4IR3Ha5LnmZ2ehOehChWBdDjbhg4Vi1Vw+IgrpyA+0WOQw8uEHFVzBm/9FDAmVY2XcELwo/zPtWCQ==" length="5255939" />
     </item>
   </channel>
 </rss>
