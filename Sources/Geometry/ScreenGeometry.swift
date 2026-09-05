@@ -100,17 +100,39 @@ enum ScreenGeometry {
         }
     }
 
-    /// `bounds`의 가장자리에 닿는 변에만 바깥 여백을, 모든 변에 안쪽 간격을 적용한다.
-    /// 그리드 스냅·가장자리 스냅·키보드 스냅이 같은 규칙을 쓴다.
+    /// 창 간격은 인접 창 사이의 전체 거리다. 화면 경계에는 바깥 여백만 적용한다.
+    /// 작은 셀에서는 여백을 비례 축소해 항상 최소 1 point를 남긴다.
     static func applyGaps(_ rect: CGRect, within bounds: CGRect, outerMargin m: CGFloat, innerGap g: CGFloat) -> CGRect {
-        var r = rect.insetBy(dx: g, dy: g)
-        if m > 0 {
-            if abs(rect.minX - bounds.minX) < 1 { r.origin.x += m; r.size.width -= m }
-            if abs(rect.maxX - bounds.maxX) < 1 { r.size.width -= m }
-            if abs(rect.minY - bounds.minY) < 1 { r.origin.y += m; r.size.height -= m }
-            if abs(rect.maxY - bounds.maxY) < 1 { r.size.height -= m }
-        }
-        return r.integral
+        guard isValidWindowRect(rect), isValidWindowRect(bounds) else { return .zero }
+        let margin = bounded(m, maximum: 48)
+        let gap = bounded(g, maximum: 32) / 2
+        var left = abs(rect.minX - bounds.minX) < 1 ? margin : gap
+        var right = abs(rect.maxX - bounds.maxX) < 1 ? margin : gap
+        var top = abs(rect.minY - bounds.minY) < 1 ? margin : gap
+        var bottom = abs(rect.maxY - bounds.maxY) < 1 ? margin : gap
+        let xScale = min(1, max(0, rect.width - 1) / max(1, left + right))
+        let yScale = min(1, max(0, rect.height - 1) / max(1, top + bottom))
+        left *= xScale; right *= xScale
+        top *= yScale; bottom *= yScale
+        return CGRect(x: rect.minX + left, y: rect.minY + top,
+                      width: max(1, rect.width - left - right),
+                      height: max(1, rect.height - top - bottom))
+    }
+
+    static func bounded(_ value: CGFloat, maximum: CGFloat) -> CGFloat {
+        value.isFinite ? min(max(0, value), maximum) : 0
+    }
+
+    static func isValidWindowRect(_ rect: CGRect) -> Bool {
+        [rect.origin.x, rect.origin.y, rect.size.width, rect.size.height].allSatisfy {
+            $0.isFinite && abs($0) < 10_000_000
+        } && rect.size.width >= 1 && rect.size.height >= 1
+    }
+
+    static func matches(_ actual: CGRect, target: CGRect, tolerance: CGFloat = 2) -> Bool {
+        isValidWindowRect(actual) && isValidWindowRect(target) &&
+        abs(actual.minX - target.minX) <= tolerance && abs(actual.minY - target.minY) <= tolerance &&
+        abs(actual.width - target.width) <= tolerance && abs(actual.height - target.height) <= tolerance
     }
 
     /// CG 전역(top-left) 사각형 → AppKit 전역(bottom-left) 사각형. 오버레이 윈도우 배치용.

@@ -22,22 +22,14 @@ final class WindowResizeController {
     /// 제목이 로컬라이즈되므로 캐시하지 않는다(표시 언어가 바뀔 수 있다).
     static var builtinGroups: [PresetGroup] { [
         PresetGroup(title: String(localized: "Video"), presets: [
-            Preset(label: "4:3 · 720 × 480",    size: CGSize(width: 720,  height: 480)),
+            Preset(label: "4:3 · 640 × 480",    size: CGSize(width: 640,  height: 480)),
             Preset(label: "16:9 · 1280 × 720",  size: CGSize(width: 1280, height: 720)),
             Preset(label: "16:9 · 1920 × 1080", size: CGSize(width: 1920, height: 1080)),
-        ]),
-        // Mac App Store 스크린샷 요구 해상도(16:10, 픽셀 기준).
-        // 창 크기는 포인트라서 Retina(2x) 디스플레이에서는 1280×800 창이 2560×1600 픽셀로 캡처된다.
-        PresetGroup(title: String(localized: "App Store Screenshots (Mac · 16:10)"), presets: [
-            Preset(label: String(localized: "1280 × 800  (Retina capture → 2560 × 1600)"), size: CGSize(width: 1280, height: 800)),
-            Preset(label: String(localized: "1440 × 900  (Retina capture → 2880 × 1800)"), size: CGSize(width: 1440, height: 900)),
-            Preset(label: "2560 × 1600", size: CGSize(width: 2560, height: 1600)),
-            Preset(label: "2880 × 1800", size: CGSize(width: 2880, height: 1800)),
         ]),
     ] }
     /// 기본 그룹 + 사용자 지정 그룹(설정에서 편집, 비어 있으면 생략). 메뉴는 열 때마다 이걸로 다시 만든다.
     static var presetGroups: [PresetGroup] {
-        let custom = Settings.shared.customPresets
+        let custom = Settings.shared.customPresets.filter(\.isValid)
         guard !custom.isEmpty else { return builtinGroups }
         let group = PresetGroup(title: String(localized: "Custom"), presets: custom.map {
             Preset(label: $0.label, size: CGSize(width: $0.width, height: $0.height))
@@ -56,19 +48,28 @@ final class WindowResizeController {
     // 호버 강조 상태.
     private var highlight: ResizeHighlightWindow?
     /// 호버 중 잡아둔 대상 창. 클릭 시 이 창을 재사용해 강조 오버레이를 다시 조회하지 않는다.
-    private var hoveredWindow: AXUIElement?
+    private var hoverPoint: CGPoint?
+    private var hoverInFlight = false
+    private var request = WindowRequest()
+    private var actionGeneration = 0
     /// 비동기 호버 조회 무효화 토큰(이동이 빠르면 마지막 1건만 실제 조회).
     private var hoverToken = 0
 
     /// 메뉴에서 프리셋 선택 → 다음 창 클릭을 기다린다.
     func arm(size: CGSize, label: String) {
+        cancel()
+        guard size.width.isFinite, size.height.isFinite,
+              size.width >= 1, size.height >= 1, size.width <= 16384, size.height <= 16384 else {
+            PermissionNotice.show(text: WindowFailure.invalidGeometry.message)
+            return
+        }
         guard AccessibilityPermission.isGranted else {
             PermissionNotice.showDenied()
             AccessibilityPermission.requestAndOpenSettings()
             return
         }
         pendingSize = size
-        hoveredWindow = nil
+        hoverPoint = nil
         MouseEventTap.shared.setTracksMouseMoved(true)
         showHUD(text: String(localized: "Click the window to resize — \(label)   (Esc to cancel)"))
         glog("창 크기 고정 무장 \(Int(size.width))x\(Int(size.height))")
@@ -76,6 +77,7 @@ final class WindowResizeController {
 
     /// 크기 가져오기 무장 — 다음 클릭한 창의 현재 크기를 `handler`로 전달한다(설정의 프리셋 추가용).
     func armCapture(_ handler: @escaping (CGSize) -> Void) {
+        cancel()
         guard AccessibilityPermission.isGranted else {
             PermissionNotice.showDenied()
             AccessibilityPermission.requestAndOpenSettings()
@@ -83,7 +85,7 @@ final class WindowResizeController {
         }
         pendingSize = nil
         captureHandler = handler
-        hoveredWindow = nil
+        hoverPoint = nil
         MouseEventTap.shared.setTracksMouseMoved(true)
         showHUD(text: String(localized: "Click a window to capture its size   (Esc to cancel)"))
         glog("창 크기 가져오기 무장")
@@ -91,9 +93,13 @@ final class WindowResizeController {
 
     /// 무장 해제(성공/취소 공통).
     func cancel() {
+        request.cancel()
+        request = WindowRequest()
+        actionGeneration &+= 1
+        hoverInFlight = false
         pendingSize = nil
         captureHandler = nil
-        hoveredWindow = nil
+        hoverPoint = nil
         hoverToken &+= 1
         MouseEventTap.shared.setTracksMouseMoved(false)
         hideHUD()
@@ -104,65 +110,58 @@ final class WindowResizeController {
     /// 탭 콜백을 막지 않도록(전역 입력 지연 방지) main 큐로 넘겨 조회한다.
     func updateHover(at point: CGPoint) {
         guard isArmed else { return }
-        hoverToken &+= 1
+        hoverPoint = point
+        guard !hoverInFlight else { return }
+        hoverInFlight = true
         let token = hoverToken
-        DispatchQueue.main.async { [weak self] in
-            MainActor.assumeIsolated {
-                guard let self, self.isArmed, self.hoverToken == token else { return }
-                guard let window = AXWindowController.shared.windowUnderCursor(cgPoint: point) else {
-                    self.hoveredWindow = nil
-                    self.hideHighlight()
-                    return
-                }
-                // 우리 앱 창(강조/HUD)을 집었으면 현재 강조를 그대로 유지(깜빡임 방지).
-                var pid: pid_t = 0
-                if AXUIElementGetPid(window, &pid) == .success, pid == getpid() { return }
-                guard let frame = AXWindowController.shared.frame(of: window) else { return }
-                self.hoveredWindow = window
-                self.showHighlight(cgFrame: frame)
+        AXWindowController.shared.queryWindow(at: point, request: request) { [weak self] result in
+            guard let self, self.isArmed, self.hoverToken == token else { return }
+            self.hoverInFlight = false
+            if let latest = self.hoverPoint, latest != point {
+                self.updateHover(at: latest)
+                return
             }
+            guard case .success(let snapshot) = result, snapshot.pid != getpid() else {
+                self.hideHighlight()
+                return
+            }
+            self.showHighlight(cgFrame: snapshot.frame)
         }
     }
 
-    /// 좌클릭 지점의 창을 고정 크기로 리사이즈. 호출 후엔 항상 무장 해제된다.
+    /// Capture the click's point and finish the input mode before asynchronous AX work starts.
     func applyAt(point: CGPoint) {
-        let target = hoveredWindow
-        defer { cancel() }
-        guard isArmed, AccessibilityPermission.isGranted else { return }
-        hideHighlight()   // 강조 오버레이가 AX 조회를 가리지 않도록 먼저 내림.
-        // 호버로 잡아둔 창을 우선 사용(강조 오버레이 간섭 회피), 없으면 위치로 조회.
-        guard let window = target ?? AXWindowController.shared.windowUnderCursor(cgPoint: point) else {
-            glog("창 크기 고정: 클릭 위치에 창 없음")
-            return
-        }
-        // 우리 앱 자신의 창(HUD·설정 등)은 건드리지 않는다.
-        var pid: pid_t = 0
-        if AXUIElementGetPid(window, &pid) == .success, pid == getpid() { return }
-
-        // 크기 가져오기 모드: 리사이즈 대신 현재 크기를 넘기고 끝.
-        if let handler = captureHandler {
-            if let frame = AXWindowController.shared.frame(of: window) {
-                glog("창 크기 가져오기 \(Int(frame.width))x\(Int(frame.height))")
-                handler(frame.size)
-            }
-            return
-        }
-        guard let size = pendingSize else { return }
-
-        // 현재 좌상단(origin) 유지 + 가시 영역 안으로 클램프.
-        let origin = AXWindowController.shared.frame(of: window)?.origin ?? point
-        var rect = CGRect(origin: origin, size: size)
-        if let display = ScreenGeometry.displayContaining(cgPoint: point),
-           let screen = ScreenGeometry.screen(for: display.id) {
-            let usable = ScreenGeometry.cgVisibleBounds(for: screen)
-            rect = clamp(rect, within: usable)
-            // 화면 사용 영역보다 큰 프리셋(App Store 2560×1600 등)은 앱이 창을 그 크기로 못 늘린다 → 안내.
-            if size.width > usable.width || size.height > usable.height {
-                PermissionNotice.show(text: String(localized: "\(Int(size.width)) × \(Int(size.height)) is larger than this screen’s usable area (\(Int(usable.width)) × \(Int(usable.height))) and may not fit"))
+        guard isArmed else { return }
+        let size = pendingSize
+        let handler = captureHandler
+        cancel()
+        let generation = actionGeneration
+        AXWindowController.shared.queryWindow(at: point, request: request) { [weak self] result in
+            guard let self, self.actionGeneration == generation else { return }
+            switch result {
+            case .failure(let error): PermissionNotice.show(text: error.message)
+            case .success(let snapshot):
+                guard snapshot.pid != getpid() else {
+                    PermissionNotice.show(text: WindowFailure.noWindow.message)
+                    return
+                }
+                if let handler {
+                    handler(snapshot.frame.size)
+                    return
+                }
+                guard let size else { return }
+                var rect = CGRect(origin: snapshot.frame.origin, size: size)
+                if let display = ScreenGeometry.displayContaining(cgPoint: point),
+                   let screen = ScreenGeometry.screen(for: display.id) {
+                    let usable = ScreenGeometry.cgVisibleBounds(for: screen)
+                    rect = self.clamp(rect, within: usable)
+                }
+                AXWindowController.shared.setFrame(rect, for: snapshot.element, request: self.request) { result in
+                    guard self.actionGeneration == generation else { return }
+                    if case .failure(let error) = result { PermissionNotice.show(text: error.message) }
+                }
             }
         }
-        AXWindowController.shared.setFrame(rect, for: window)
-        glog("창 크기 고정 적용 \(Int(size.width))x\(Int(size.height)) → \(rs(rect))")
     }
 
     /// 크기는 유지하고 origin만 가시 영역 안으로 민다(창이 화면보다 크면 좌상단 정렬).

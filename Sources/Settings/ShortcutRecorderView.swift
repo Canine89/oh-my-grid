@@ -10,6 +10,10 @@ final class ShortcutRecorderView: NSView {
 
     private var hotkey: Hotkey
     private var recording = false
+    static var isRecordingShortcut: Bool {
+        guard NSApp.isActive, let recorder = NSApp.keyWindow?.firstResponder as? ShortcutRecorderView else { return false }
+        return recorder.recording
+    }
     /// 클릭으로 포커스를 받은 경우에만 녹화를 시작한다(창이 열리며 자동으로 첫 응답자가 될 때는 녹화 안 함).
     private var clickArmed = false
     private let label = NSTextField(labelWithString: "")
@@ -36,7 +40,18 @@ final class ShortcutRecorderView: NSView {
             label.centerXAnchor.constraint(equalTo: centerXAnchor),
             label.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
+        setAccessibilityElement(true)
+        setAccessibilityRole(.button)
+        setAccessibilityLabel(String(localized: "Record shortcut"))
         refresh()
+    }
+
+    override func accessibilityPerformPress() -> Bool {
+        clickArmed = true
+        window?.makeFirstResponder(self)
+        recording = true
+        refresh()
+        return true
     }
 
     required init?(coder: NSCoder) { fatalError("not implemented") }
@@ -89,6 +104,10 @@ final class ShortcutRecorderView: NSView {
     }
 
     override func keyDown(with event: NSEvent) {
+        if !recording, event.keyCode == 49 || event.keyCode == 36 {
+            _ = accessibilityPerformPress()
+            return
+        }
         guard recording else { super.keyDown(with: event); return }
         // 수정키 없는 Esc → 녹화 취소.
         if event.keyCode == 53, event.modifierFlags.intersection(.deviceIndependentFlagsMask).isEmpty {
@@ -100,9 +119,8 @@ final class ShortcutRecorderView: NSView {
             onError?(err)
             return   // 녹화 상태 유지 — 다른 조합을 다시 시도할 수 있게.
         }
-        hotkey = hk
-        window?.makeFirstResponder(nil)   // 녹화 종료(refresh는 resignFirstResponder에서)
-        onChange?(hk)
         onError?("")
+        onChange?(hk)
+        window?.makeFirstResponder(nil) // The binding is the source of truth when validation rejects a shortcut.
     }
 }

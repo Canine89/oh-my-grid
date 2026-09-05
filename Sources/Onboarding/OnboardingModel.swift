@@ -58,7 +58,8 @@ final class OnboardingModel: ObservableObject {
     }
 
     /// 마무리 화면 선택값을 실제 설정에 반영한다.
-    func applyFinishChoices() {
+    func applyFinishChoices() -> Bool {
+        launchAtLoginError = nil
         Settings.shared.edgeSnapEnabled = edgeSnap
         if let preset = gridPreset {
             Settings.shared.columns = preset.columns
@@ -70,8 +71,10 @@ final class OnboardingModel: ObservableObject {
             } catch {
                 launchAtLoginError = error.localizedDescription
                 launchAtLogin = LoginItemController.isEnabled
+                return false
             }
         }
         NotificationCenter.default.post(name: .gridSettingsChanged, object: nil)
+        return true
     }
 }

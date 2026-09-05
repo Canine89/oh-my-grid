@@ -3,8 +3,8 @@ import Foundation
 /// UserDefaults 기반 환경설정.
 final class Settings {
     static let shared = Settings()
-    private let defaults = UserDefaults.standard
-    private init() {}
+    private let defaults: UserDefaults
+    init(defaults: UserDefaults = .standard) { self.defaults = defaults }
 
     private enum Keys {
         static let columns = "gridColumns"
@@ -23,7 +23,7 @@ final class Settings {
         static let language = "appLanguage"
     }
 
-    /// 표시 언어. 기본 영어(시스템 언어와 무관). 런치 인자 `-appLanguage ko`로도 지정 가능(스크린샷용).
+    /// 표시 언어. 기본 영어(시스템 언어와 무관).
     var language: AppLanguage {
         get { defaults.string(forKey: Keys.language).flatMap(AppLanguage.init(rawValue:)) ?? .english }
         set { defaults.set(newValue.rawValue, forKey: Keys.language) }
@@ -59,10 +59,10 @@ final class Settings {
         get {
             guard let data = defaults.data(forKey: Keys.customPresets),
                   let list = try? JSONDecoder().decode([CustomPreset].self, from: data) else { return [] }
-            return list
+            return list.filter(\.isValid)
         }
         set {
-            if let data = try? JSONEncoder().encode(newValue) { defaults.set(data, forKey: Keys.customPresets) }
+            if let data = try? JSONEncoder().encode(newValue.filter(\.isValid)) { defaults.set(data, forKey: Keys.customPresets) }
         }
     }
 
@@ -104,14 +104,14 @@ final class Settings {
 
     /// 화면 가장자리 바깥 여백(px). 스냅된 창과 화면 가장자리 사이 간격. 기본 0.
     var outerMargin: CGFloat {
-        get { CGFloat(defaults.double(forKey: Keys.outerMargin)) }
-        set { defaults.set(Double(newValue), forKey: Keys.outerMargin) }
+        get { ScreenGeometry.bounded(CGFloat(defaults.double(forKey: Keys.outerMargin)), maximum: 48) }
+        set { defaults.set(Double(ScreenGeometry.bounded(newValue, maximum: 48)), forKey: Keys.outerMargin) }
     }
 
     /// 셀 블록 안쪽 여백(px). 창과 셀 경계 사이 간격. 기본 0.
     var innerGap: CGFloat {
-        get { CGFloat(defaults.double(forKey: Keys.innerGap)) }
-        set { defaults.set(Double(newValue), forKey: Keys.innerGap) }
+        get { ScreenGeometry.bounded(CGFloat(defaults.double(forKey: Keys.innerGap)), maximum: 32) }
+        set { defaults.set(Double(ScreenGeometry.bounded(newValue, maximum: 32)), forKey: Keys.innerGap) }
     }
 
     /// 제스처를 끌 앱들의 bundle ID 목록. 이 앱들이 맨 앞이면 이벤트 탭이 입력에 개입하지 않는다.
@@ -164,6 +164,9 @@ struct CustomPreset: Codable, Identifiable, Hashable {
     var name: String
     var width: Int
     var height: Int
+
+    static let dimensionRange = 1...16384
+    var isValid: Bool { Self.dimensionRange.contains(width) && Self.dimensionRange.contains(height) }
 
     /// 메뉴 표시용 라벨. 이름이 비어 있으면 크기만.
     var label: String {

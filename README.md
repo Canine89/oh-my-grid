@@ -10,7 +10,7 @@
 
 - macOS 26 (Tahoe) or later · lives in the menu bar · free & open source · English / 한국어
 - Install: `brew install --cask canine89/tap/oh-my-grid` or grab the notarized `.dmg` from [Releases](../../releases/latest)
-- Needs the **Accessibility** permission (System Settings → Privacy & Security → Accessibility). No screen recording, no file access.
+- Needs the **Accessibility** permission (System Settings → Privacy & Security → Accessibility). No screen recording; app bundles are read only when you choose excluded apps.
 - Trackpad? Press `⌃⌥G` while dragging instead of right-clicking. Everything is configurable in **Settings…**; a first-run guide walks you through it.
 
 ---
@@ -86,7 +86,7 @@ brew uninstall --cask --zap oh-my-grid
 
 ### ↔️ 가장자리 스냅
 
-그리드를 켜지 않아도, 창을 드래그해 **화면 가장자리에 붙이면** 그 방향의 절반 영역이 미리보기로 표시되고 손을 떼면 창이 그 절반을 채웁니다(왼쪽·오른쪽·위·아래). 설정 → 일반에서 끌 수 있습니다.
+그리드를 켜지 않아도, 창을 드래그해 **화면 가장자리에 붙이면** 왼쪽·오른쪽·아래에서는 절반, 위에서는 최대화 영역을 미리 보여 주고 손을 떼면 배치합니다. 설정 → 일반에서 끌 수 있습니다.
 
 ### ⌨️ 키보드 스냅 단축키
 
@@ -111,7 +111,7 @@ brew uninstall --cask --zap oh-my-grid
 |---|---|
 | **그리드 켜기/끄기** | 드래그 제스처 활성/비활성 토글 |
 | **창 스냅** | 키보드 스냅과 같은 동작(절반·1/4·최대화·가운데)을 메뉴에서 실행 |
-| **창 크기 고정** | 프리셋(비디오 4:3·16:9, App Store 스크린샷 16:10, 사용자 지정) 선택 → 바꿀 창 클릭 → 그 크기로 고정 |
+| **창 크기 고정** | 프리셋(비디오 4:3·16:9, 사용자 지정) 선택 → 바꿀 창 클릭 → 그 크기로 고정 |
 | **설정…** | 일반(언어·가장자리 스냅·로그인 시 실행·권한) / 그리드(열·행·여백, 라이브 미리보기) / 단축키 / 창 크기 / 예외 앱 / 정보 |
 | **시작 가이드…** | 첫 실행 때 뜨는 가이드를 다시 열기 |
 | **업데이트 확인…** | Sparkle 수동 업데이트 |
@@ -121,7 +121,7 @@ brew uninstall --cask --zap oh-my-grid
 ### ⚙️ 설정에서 할 수 있는 것
 
 - **표시 언어** — 기본은 영어. 설정 → 일반 → Language 에서 English / 한국어를 고르면 재시작 없이 바뀝니다.
-- **그리드 칸 수·여백** — 열·행(각 1–24)과 화면 가장자리 여백(0–48px)·창 사이 간격(0–32px). 여백은 그리드·가장자리·키보드 스냅에 모두 적용됩니다.
+- **그리드 칸 수·여백** — 열·행(각 1–24)과 화면 가장자리 여백(0–48pt)·창 사이 간격(0–32pt). 여백은 그리드·가장자리·키보드 스냅에 모두 적용됩니다. 창 간격은 인접한 두 창 사이의 전체 거리이며, 작은 칸에서는 여백이 자동으로 줄어듭니다.
 - **사용자 지정 창 크기 프리셋** — 이름·너비·높이를 직접 입력하거나 **창 클릭으로 가져오기**로 아무 창의 현재 크기를 저장.
 - **예외 앱** — 실행 중인 앱에서 고르거나 앱을 끌어다 놓아 추가하면 그 앱 창에는 그리드가 뜨지 않습니다.
 - **로그인 시 자동 실행**
@@ -134,7 +134,7 @@ brew uninstall --cask --zap oh-my-grid
 
 ## 🔐 권한에 대해
 
-oh-my-grid 는 다른 앱의 창을 옮기기 위해 **손쉬운 사용(접근성)** 권한이 필요합니다. 이 권한으로 창 위치·크기를 조절하고, 드래그 중 마우스 제스처를 인식합니다. 화면 녹화·파일 접근 권한은 쓰지 않습니다. 앱은 어떤 데이터도 수집·전송하지 않습니다 → [개인정보 처리방침](PRIVACY.md)
+oh-my-grid 는 다른 앱의 창을 옮기기 위해 **손쉬운 사용(접근성)** 권한이 필요합니다. 이 권한으로 창 위치·크기를 조절하고, 드래그 중 마우스 제스처를 인식합니다. 화면 녹화 권한은 쓰지 않습니다. 예외 앱을 고를 때에만 사용자가 선택한 앱 번들을 읽습니다. 설정과 창 내용은 전송하지 않으며, Sparkle 업데이트를 위해 GitHub에 연결합니다 → [개인정보 처리방침](PRIVACY.md)
 
 ---
 
@@ -145,3 +145,13 @@ oh-my-grid 는 다른 앱의 창을 옮기기 위해 **손쉬운 사용(접근�
 ---
 
 만든 곳: Golden Rabbit · 문의: hgpark@goldenrabbit.co.kr
+
+## 개발 및 배포
+
+- `xcodegen generate` — Xcode 프로젝트 생성
+- `./scripts/test.sh` — 회귀 테스트
+- `./scripts/release.sh` — Developer ID 서명·공증을 거쳐 DMG와 업데이트용 ZIP 생성
+- `./scripts/release.sh <버전>` — 새 버전 패키지와 Sparkle appcast 생성
+- `./scripts/release.sh <버전> --publish` — GitHub Release 게시 및 appcast·Homebrew 캐스크 갱신
+
+앱 배포는 DMG 설치와 Sparkle 자동 업데이트를 사용합니다. 업데이트 서명키는 기존 설치본과의 호환성을 위해 유지해야 합니다.

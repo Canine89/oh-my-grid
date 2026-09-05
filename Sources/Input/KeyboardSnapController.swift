@@ -8,6 +8,8 @@ final class KeyboardSnapController {
     static let shared = KeyboardSnapController()
     private init() {}
 
+    private var request = WindowRequest()
+    private var requestGeneration = 0
     private var flash: GridOverlayWindow?
 
     /// keyDown 이벤트가 스냅 단축키와 일치하면 실행하고 true(이벤트 소비).
@@ -17,7 +19,9 @@ final class KeyboardSnapController {
         guard let action = SnapAction.allCases.first(where: { (hotkeys[$0] ?? $0.defaultHotkey).matches(event) }) else {
             return false
         }
-        perform(action)
+        if event.getIntegerValueField(.keyboardEventAutorepeat) == 0 {
+            DispatchQueue.main.async { self.perform(action) }
+        }
         return true   // 일치했으면 창을 못 찾아도 소비(다른 앱에 ⌃⌥← 가 흘러가지 않게)
     }
 
@@ -27,12 +31,22 @@ final class KeyboardSnapController {
             PermissionNotice.showDenied()
             return
         }
-        guard let window = AXWindowController.shared.frontmostFocusedWindow(),
-              let frame = AXWindowController.shared.frame(of: window) else {
-            glog("keyboard snap: no focused window")
-            return
+        guard !ShortcutRecorderView.isRecordingShortcut else { return }
+        request.cancel()
+        request = WindowRequest()
+        requestGeneration &+= 1
+        let generation = requestGeneration
+        AXWindowController.shared.queryWindow(request: request) { [weak self] result in
+            guard let self, self.requestGeneration == generation else { return }
+            switch result {
+            case .failure(let error): PermissionNotice.show(text: error.message)
+            case .success(let snapshot): self.place(action, snapshot: snapshot, generation: generation)
+            }
         }
-        // 우리 앱 창(설정·온보딩)도 스냅 대상이 되어도 무해하다.
+    }
+
+    private func place(_ action: SnapAction, snapshot: WindowSnapshot, generation: Int) {
+        let frame = snapshot.frame
         let center = CGPoint(x: frame.midX, y: frame.midY)
         guard let display = ScreenGeometry.displayContaining(cgPoint: center),
               let screen = ScreenGeometry.screen(for: display.id) else { return }
@@ -43,9 +57,14 @@ final class KeyboardSnapController {
                                               outerMargin: Settings.shared.outerMargin,
                                               innerGap: Settings.shared.innerGap)
         }
-        AXWindowController.shared.setFrame(target, for: window)
-        glog("keyboard snap \(action.rawValue) → \(rs(target))")
-        showFlash(rect: target, action: action, screen: screen, displayBounds: display.bounds)
+        AXWindowController.shared.setFrame(target, for: snapshot.element, request: request) { [weak self] result in
+            guard let self, self.requestGeneration == generation else { return }
+            switch result {
+            case .success(let actual):
+                self.showFlash(rect: actual.frame, action: action, screen: screen, displayBounds: display.bounds)
+            case .failure(let error): PermissionNotice.show(text: error.message)
+            }
+        }
     }
 
     /// 목표 영역을 짧게 비춰 어디로 갔는지 보여준다(가장자리 미리보기와 같은 룩).

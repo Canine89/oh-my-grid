@@ -13,7 +13,7 @@
 #   3) Developer ID 서명(inside-out) + Apple 공증(notarytool --wait) + 스테이플
 #   4) 사람이 받을 DMG(공증·스테이플) + Sparkle 업데이트용 ZIP 패키징
 #   5) ZIP 을 EdDSA 개인키(키체인)로 서명 → appcast.xml 생성
-#   6) --publish: appcast.xml 커밋/푸시 + gh 로 릴리스 생성/자산 업로드
+#   6) --publish: 소스 푸시 → 릴리스 자산 업로드/공개 → appcast 푸시 → 캐스크 갱신
 #
 # 🔑 공증 준비물 (1회): Apple Developer Program($99) 멤버십 활성 → 'Developer ID Application'
 #    인증서(키체인) + notarytool 프로필. 프로필은 아래로 등록:
@@ -50,6 +50,18 @@ for a in "$@"; do
   esac
 done
 
+if [ "$PUBLISH" = "1" ]; then
+  [ -n "$VERSION_ARG" ] || { echo "✗ --publish에는 새 버전 인자가 필요합니다."; exit 1; }
+  [ "$SKIP_NOTARY" = "0" ] || { echo "✗ 공증을 생략한 빌드는 게시할 수 없습니다."; exit 1; }
+  command -v gh >/dev/null || { echo "✗ GitHub CLI(gh)가 필요합니다."; exit 1; }
+  [ -z "$(git status --porcelain)" ] || { echo "✗ 배포할 소스 변경 사항을 먼저 커밋하세요."; exit 1; }
+  # Published assets are immutable: never replace bytes used by an existing appcast.
+  if gh release view "v$VERSION_ARG" --repo "$REPO" >/dev/null 2>&1; then
+    echo "✗ v$VERSION_ARG 릴리스가 이미 있습니다. 새 버전을 사용하세요."
+    exit 1
+  fi
+fi
+
 # --- 1) 버전 올림 (요청 버전이 현재와 다를 때만 → 재실행 시 중복 올림 방지) ---
 if [ -n "$VERSION_ARG" ]; then
   CUR_MARKETING=$(grep 'MARKETING_VERSION:' project.yml | grep -oE '"[^"]*"' | tr -d '"' | head -1)
@@ -68,13 +80,18 @@ echo "▸ 프로젝트 재생성 (xcodegen)"
 command -v xcodegen >/dev/null || { echo "✗ 'brew install xcodegen' 필요"; exit 1; }
 xcodegen generate >/dev/null
 
+echo "▸ 회귀 테스트"
+./scripts/test.sh
+
 echo "▸ Release 빌드"
 rm -rf "$DD" "$DIST"
 xcodebuild -project "$PROJECT" -scheme "$SCHEME" -configuration Release \
-  -derivedDataPath "$DD" clean build >/dev/null
+  -destination 'generic/platform=macOS' -derivedDataPath "$DD" \
+  'ARCHS=arm64 x86_64' ONLY_ACTIVE_ARCH=NO clean build >/dev/null
 
 APP="$DD/Build/Products/Release/$APP_NAME"
 [ -d "$APP" ] || { echo "✗ 빌드 결과 앱 없음: $APP"; exit 1; }
+python3 scripts/verify-release.py "$APP"
 
 VERSION="$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist")"
 BUILD="$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$APP/Contents/Info.plist")"
@@ -138,8 +155,8 @@ if [ "$SKIP_NOTARY" = "0" ]; then
   xcrun stapler staple "$APP"
   xcrun stapler validate "$DMG" >/dev/null
   xcrun stapler validate "$APP" >/dev/null && echo "  스테이플 확인 ✓"
-  spctl -a -vv "$APP" 2>&1 | grep -iE "accepted|origin" || true
-  spctl -a -vv -t open --context context:primary-signature "$DMG" 2>&1 | grep -iE "accepted|origin" || true
+  spctl -a -vv "$APP"
+  spctl -a -vv -t open --context context:primary-signature "$DMG"
 else
   echo "▸ 공증 건너뜀(--skip-notary): Developer ID 서명만 (다운로드 시 Gatekeeper 경고 남음)"
 fi
@@ -160,14 +177,16 @@ if [ -z "$VERSION_ARG" ]; then
 fi
 
 echo "▸ EdDSA 서명 + appcast.xml 생성"
-SIGN_UPDATE="$(find "$DD" "$HOME/Library/Developer/Xcode/DerivedData" -name sign_update -path '*sparkle*' -type f 2>/dev/null | head -1)"
+SIGN_UPDATE="$DD/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
 [ -x "$SIGN_UPDATE" ] || { echo "✗ sign_update 도구를 못 찾음 (Sparkle 패키지 해석 필요)"; exit 1; }
 # 키체인의 Sparkle 개인키가 앱에 박힌 SUPublicEDKey 와 같은 쌍인지 확인. 다른 앱(opensnap 등)이
 # 같은 키체인 계정(ed25519)에 새 키를 만들면 여기서 잡힌다 — 안 맞는 키로 서명하면 모든 기존
 # 설치본에서 "improperly signed" 오류가 난다(1.9.1에서 실제 발생).
 GENERATE_KEYS="$(dirname "$SIGN_UPDATE")/generate_keys"
 EXPECTED_PUB="$(/usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$APP/Contents/Info.plist")"
-ACTUAL_PUB="$("$GENERATE_KEYS" -p ${OMOG_SPARKLE_ACCOUNT:+--account "$OMOG_SPARKLE_ACCOUNT"} 2>/dev/null || true)"
+ACCOUNT_ARGS=()
+if [ -n "${OMOG_SPARKLE_ACCOUNT:-}" ]; then ACCOUNT_ARGS=(--account "$OMOG_SPARKLE_ACCOUNT"); fi
+ACTUAL_PUB="$("$GENERATE_KEYS" -p "${ACCOUNT_ARGS[@]}" 2>/dev/null || true)"
 if [ "$EXPECTED_PUB" != "$ACTUAL_PUB" ]; then
   echo "✗ Sparkle 서명키 불일치 — 이 키로 서명하면 기존 설치본이 업데이트를 거부합니다."
   echo "  앱 SUPublicEDKey : $EXPECTED_PUB"
@@ -176,7 +195,9 @@ if [ "$EXPECTED_PUB" != "$ACTUAL_PUB" ]; then
   echo "    OMOG_SPARKLE_ACCOUNT=<이름> 으로 실행하거나, 키를 교체하려면 project.yml 의 SUPublicEDKey 를 바꾸세요."
   exit 1
 fi
-SIG_ATTRS="$("$SIGN_UPDATE" ${OMOG_SPARKLE_ACCOUNT:+--account "$OMOG_SPARKLE_ACCOUNT"} "$ZIP")"
+SIG_ATTRS="$("$SIGN_UPDATE" "${ACCOUNT_ARGS[@]}" "$ZIP")"
+SIGNATURE="$("$SIGN_UPDATE" "${ACCOUNT_ARGS[@]}" -p "$ZIP")"
+"$SIGN_UPDATE" "${ACCOUNT_ARGS[@]}" --verify "$ZIP" "$SIGNATURE"
 ZIP_URL="https://github.com/$REPO/releases/download/v$VERSION/oh-my-grid-$VERSION.zip"
 PUBDATE="$(date -u "+%a, %d %b %Y %H:%M:%S +0000")"
 
@@ -215,32 +236,41 @@ XML
 echo "  appcast.xml 작성 ✓ (버전 $VERSION / build $BUILD)"
 
 if [ "$PUBLISH" = "1" ]; then
-  command -v gh >/dev/null || { echo "✗ 'brew install gh' 필요"; exit 1; }
   TAG="v$VERSION"
-  echo "▸ appcast.xml + project.yml(버전) 커밋/푸시"
-  git add appcast.xml project.yml
-  git commit -q -m "release: v$VERSION (appcast 갱신)" || true
+  # Commit only a script-generated version bump; the reviewed app source was committed before the build.
+  if ! git diff --quiet -- project.yml; then
+    git add project.yml
+    git commit -q -m "release: prepare v$VERSION (build $BUILD)"
+  fi
+  SOURCE_COMMIT="$(git rev-parse HEAD)"
   git push
-  echo "▸ GitHub Release '$TAG' 업로드 (DMG + ZIP)"
-  if gh release view "$TAG" >/dev/null 2>&1; then
-    gh release upload "$TAG" "$DMG" "$ZIP" --clobber
-  else
-    gh release create "$TAG" "$DMG" "$ZIP" \
-      --title "oh-my-grid $VERSION" \
-      --notes "$NOTES_MD
+  NOTES_FILE="$DIST/release-notes.md"
+  cat > "$NOTES_FILE" <<NOTES
+$NOTES_MD
 
 ---
-설치: [INSTALL.md](https://github.com/$REPO/blob/main/INSTALL.md) 참고. 이미 설치한 사용자는 앱이 자동으로 업데이트합니다."
-  fi
+설치: [INSTALL.md](https://github.com/$REPO/blob/main/INSTALL.md) 참고. 이미 설치한 사용자는 앱이 자동으로 업데이트합니다.
+NOTES
+  echo "▸ 릴리스 자산 업로드 (DMG + ZIP)"
+  gh release create "$TAG" "$DMG" "$ZIP" --repo "$REPO" --draft \
+    --target "$SOURCE_COMMIT" --title "oh-my-grid $VERSION" --notes-file "$NOTES_FILE"
+  gh release edit "$TAG" --repo "$REPO" --draft=false --latest
+  # Only advertise an update after its public download exists.
+  curl --fail --location --head --silent --show-error "$ZIP_URL" >/dev/null
+  echo "▸ Sparkle appcast 게시"
+  git add appcast.xml
+  git commit -q -m "release: v$VERSION (appcast 갱신)"
+  git push
   # Homebrew 캐스크(canine89/tap) 버전·sha256 갱신. 이걸 빼먹으면 brew 사용자는 영원히 옛 버전에 머문다(1.6.3→1.9.1 사이 실제 발생).
   TAP_DIR="$(brew --repository canine89/tap 2>/dev/null || true)"
   CASK="$TAP_DIR/Casks/oh-my-grid.rb"
   if [ -f "$CASK" ]; then
     echo "▸ Homebrew 캐스크 갱신 ($CASK)"
+    git -C "$TAP_DIR" pull --ff-only
     DMG_SHA="$(shasum -a 256 "$DMG" | cut -d' ' -f1)"
     sed -i '' -e "s/version \"[^\"]*\"/version \"$VERSION\"/" -e "s/sha256 \"[0-9a-f]*\"/sha256 \"$DMG_SHA\"/" "$CASK"
     git -C "$TAP_DIR" add Casks/oh-my-grid.rb
-    git -C "$TAP_DIR" commit -q -m "Update oh-my-grid to $VERSION" || true
+    git -C "$TAP_DIR" commit -q -m "Update oh-my-grid to $VERSION"
     git -C "$TAP_DIR" push -q && echo "  캐스크 $VERSION ✓"
   else
     echo "⚠️ canine89/tap 이 이 Mac에 없어 캐스크를 못 올렸습니다: brew tap canine89/tap 후 다시 --publish"

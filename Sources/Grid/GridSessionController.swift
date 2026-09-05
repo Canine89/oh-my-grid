@@ -13,6 +13,11 @@ final class GridSessionController {
     /// 우클릭-업으로 선택이 잠긴 뒤(좌버튼 해제 대기 중)면 true.
     var hasPending: Bool { pendingWindow != nil }
 
+    private var placementRequest = WindowRequest()
+    private var sessionGeneration = 0
+    private var commitWhenReady = false
+    private var checkingDrag = false
+    private var latestDragPoint: CGPoint?
     private var targetWindow: AXUIElement?
     private var displayBounds: CGRect = .zero
     private var anchor = ScreenGeometry.Cell(col: 0, row: 0)
@@ -61,10 +66,6 @@ final class GridSessionController {
             PermissionNotice.showDenied()
             return false
         }
-        guard let window = AXWindowController.shared.windowUnderCursor(cgPoint: point) else {
-            glog("arm 실패: 커서 아래 창을 못 찾음 @\(Int(point.x)),\(Int(point.y))")
-            return false
-        }
         guard let display = ScreenGeometry.displayContaining(cgPoint: point),
               let screen = ScreenGeometry.screen(for: display.id) else {
             glog("arm 실패: 디스플레이 못 찾음 @\(Int(point.x)),\(Int(point.y))")
@@ -73,10 +74,16 @@ final class GridSessionController {
         glog("arm 성공 display=\(display.id) bounds=\(rs(display.bounds))")
 
         // 가장자리 미리보기가 떠 있었다면 정리(그리드와 상호 배타).
+        overlay?.orderOut(nil)
         hideEdgePreview()
         clearEdgeDrag()
 
-        targetWindow = window
+        placementRequest.cancel()
+        placementRequest = WindowRequest()
+        sessionGeneration &+= 1
+        let generation = sessionGeneration
+        commitWhenReady = false
+        targetWindow = nil
         // 셀 계산은 메뉴바/Dock을 제외한 사용 영역 기준 → 스냅 창이 Dock·상단바와 안 겹침.
         displayBounds = ScreenGeometry.cgVisibleBounds(for: screen)
         pendingWindow = nil
@@ -97,11 +104,22 @@ final class GridSessionController {
         win.gridView.rebuildGrid()
         win.gridView.selection = currentSelectionRect()
         win.gridView.label = gridSelectionLabel()
-        win.fadeIn()
-        overlay = win
+        overlay = win // Shown only after hit-testing, so our own overlay cannot become the target.
 
         isArmed = true
         startWatchdog()
+        AXWindowController.shared.queryWindow(at: point, request: placementRequest) { [weak self] result in
+            guard let self, self.sessionGeneration == generation, self.isArmed else { return }
+            switch result {
+            case .success(let snapshot):
+                self.targetWindow = snapshot.element
+                if self.commitWhenReady { self.commitPending() }
+                else { self.overlay?.fadeIn() }
+            case .failure(let error):
+                self.cancel()
+                PermissionNotice.show(text: error.message)
+            }
+        }
         return true
     }
 
@@ -133,30 +151,39 @@ final class GridSessionController {
     /// 이 시점엔 창이 이미 커서 위치(드래그 끝)에 있어 OS의 마우스업 재배치가 사실상 무효라,
     /// 우리의 스냅만 보인다 → 번쩍임 없음. (지연 1회는 OS 처리 직후를 확실히 덮기 위함)
     func commitPending() {
+        if isArmed && targetWindow == nil {
+            commitWhenReady = true
+            return
+        }
         if isArmed { lockSelection() }
         guard let window = pendingWindow, let frame = pendingFrame else { return }
         pendingWindow = nil
         pendingFrame = nil
         targetWindow = nil
-        var pid: pid_t = 0
-        if AXUIElementGetPid(window, &pid) == .success {
-            NotificationCenter.default.post(name: .gridSnapCommitted, object: nil, userInfo: ["pid": pid])
-        }
-        // 즉시 적용하지 않는다(그러면 OS 드래그 종료가 창을 커서로 되돌려 번쩍임). 창이 커서에
-        // 있는 동안 OS가 드래그를 끝내게 두고(제자리=무해), 그 직후에 한 번만 그리드로 스냅한다.
-        for delay in [0.05, 0.18] {
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                AXWindowController.shared.setFrame(frame, for: window)
+        commitWhenReady = false
+        let generation = sessionGeneration
+        // Let the OS finish its drag before applying the final frame once.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+            guard let self, self.sessionGeneration == generation else { return }
+            AXWindowController.shared.setFrame(frame, for: window, request: self.placementRequest) { [weak self] result in
+                guard self?.sessionGeneration == generation else { return }
+                switch result {
+                case .success(let actual):
+                    NotificationCenter.default.post(name: .gridSnapCommitted, object: nil,
+                                                    userInfo: ["pid": actual.pid])
+                    glog("grid snap applied: \(rs(actual.frame))")
+                case .failure(let error): PermissionNotice.show(text: error.message)
+                }
             }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) {
-            let after = AXWindowController.shared.frame(of: window)
-            glog("commitPending 목표=\(rs(frame)) 최종=\(after.map(rs) ?? "nil")")
         }
     }
 
     /// 취소 — 창 변경 없이 오버레이만 정리.
     func cancel() {
+        placementRequest.cancel()
+        placementRequest = WindowRequest()
+        sessionGeneration &+= 1
+        commitWhenReady = false
         teardownOverlay()
         clearEdgeDrag()
         targetWindow = nil
@@ -170,6 +197,8 @@ final class GridSessionController {
     /// leftMouseDown 시 호출 — 다운 지점만 기록한다(AX 조회 없음 → 클릭 전달 지연 없음).
     /// 실제 후보 창 조회는 첫 드래그 이벤트에서 비동기로 1회만 한다(순수 클릭은 AX를 전혀 안 함).
     func beginDrag(at point: CGPoint) {
+        cancel()
+        sessionGeneration &+= 1
         clearEdgeDrag()
         guard Settings.shared.edgeSnapEnabled, AccessibilityPermission.isGranted else { return }
         dragStartPoint = point
@@ -182,20 +211,19 @@ final class GridSessionController {
         guard let start = dragStartPoint else { return }
         dragToken &+= 1
         let token = dragToken
-        DispatchQueue.main.async { [weak self] in
-            MainActor.assumeIsolated {
-                guard let self, self.dragToken == token else { return }
-                guard let window = AXWindowController.shared.windowUnderCursor(cgPoint: start) else { return }
-                guard self.dragToken == token else { return }   // 캡처 도중 취소/재시작 방지
-                self.dragCandidate = window
-                self.dragInitialOrigin = AXWindowController.shared.frame(of: window)?.origin
-            }
+        AXWindowController.shared.queryWindow(at: start) { [weak self] result in
+            guard let self, self.dragToken == token else { return }
+            guard case .success(let snapshot) = result else { return }
+            self.dragCandidate = snapshot.element
+            self.dragInitialOrigin = snapshot.frame.origin
+            if let point = self.latestDragPoint { self.updateEdgeDrag(to: point) }
         }
     }
 
     /// leftMouseDragged(그리드 비무장 시) 호출 — 가장자리 존을 판정하고 미리보기를 갱신한다.
     func updateEdgeDrag(to point: CGPoint) {
         guard !isArmed, Settings.shared.edgeSnapEnabled else { return }
+        latestDragPoint = point
         // 첫 드래그에서만 후보 창을 비동기 캡처(순수 클릭이었다면 여기 도달 안 함 → AX 없음).
         if needsCandidate {
             needsCandidate = false
@@ -213,13 +241,19 @@ final class GridSessionController {
 
         // 실제 창 드래그인지 확정(초기 origin 대비 이동). 아직이면 미리보기 보류.
         if !dragConfirmed {
-            guard let initial = dragInitialOrigin,
-                  let now = AXWindowController.shared.frame(of: dragCandidate!)?.origin else { return }
-            if hypot(now.x - initial.x, now.y - initial.y) >= dragConfirmDistance {
-                dragConfirmed = true
-            } else {
-                return
+            guard !checkingDrag, let initial = dragInitialOrigin, let candidate = dragCandidate else { return }
+            checkingDrag = true
+            let token = dragToken
+            AXWindowController.shared.inspect(candidate) { [weak self] result in
+                guard let self, self.dragToken == token else { return }
+                self.checkingDrag = false
+                guard case .success(let snapshot) = result else { return }
+                if hypot(snapshot.frame.minX - initial.x, snapshot.frame.minY - initial.y) >= self.dragConfirmDistance {
+                    self.dragConfirmed = true
+                    if let point = self.latestDragPoint { self.updateEdgeDrag(to: point) }
+                }
             }
+            return
         }
 
         edgeScreen = screen

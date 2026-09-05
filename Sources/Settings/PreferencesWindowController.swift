@@ -21,9 +21,7 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
 
     private func build() {
         let store = SettingsStore()
-        #if !MAS
         store.checkForUpdates = { UpdaterController.shared.checkForUpdates(nil) }
-        #endif
         store.captureWindowSize = { [weak self] handler in
             // 설정 창이 클릭 대상을 가리지 않도록 잠시 뒤로 보낸 뒤 캡처 모드로.
             self?.window?.orderBack(nil)
@@ -37,14 +35,14 @@ final class PreferencesWindowController: NSObject, NSWindowDelegate {
         self.store = store
 
         let host = NSHostingView(rootView: LocalizedRoot { SettingsView(store: store) })
-        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 520),
-                           styleMask: [.titled, .closable, .miniaturizable],
+        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 760, height: 560),
+                           styleMask: [.titled, .closable, .miniaturizable, .resizable],
                            backing: .buffered, defer: false)
         win.title = String(localized: "\(Brand.name) Settings")
         win.contentView = host
         win.delegate = self
         win.isReleasedWhenClosed = false
-        win.setContentSize(host.fittingSize)
+        win.minSize = NSSize(width: 680, height: 528)
         window = win
     }
 

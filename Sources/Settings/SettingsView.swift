@@ -3,38 +3,65 @@ import UniformTypeIdentifiers
 
 /// 설정 창 본문. 탭: 일반 / 그리드 / 단축키 / 창 크기 / 예외 앱 / 정보.
 struct SettingsView: View {
-    enum Tab: Hashable { case general, grid, hotkey, presets, exclusion, about }
+    enum Tab: CaseIterable, Hashable {
+        case general, grid, hotkey, presets, exclusion, about
+        var title: String {
+            switch self {
+            case .general: return String(localized: "General")
+            case .grid: return String(localized: "Grid")
+            case .hotkey: return String(localized: "Shortcuts")
+            case .presets: return String(localized: "Sizes")
+            case .exclusion: return String(localized: "Excluded Apps")
+            case .about: return String(localized: "About")
+            }
+        }
+        var icon: String {
+            switch self {
+            case .general: return "switch.2"
+            case .grid: return "rectangle.split.3x3"
+            case .hotkey: return "keyboard"
+            case .presets: return "arrow.up.left.and.arrow.down.right"
+            case .exclusion: return "app.badge.checkmark"
+            case .about: return "info.circle"
+            }
+        }
+    }
 
     @ObservedObject var store: SettingsStore
 
     var body: some View {
-        TabView(selection: $store.tab) {
-            GeneralTab(store: store)
-                .tabItem { Label("General", systemImage: "switch.2") }
-                .tag(Tab.general)
-            GridTab(store: store)
-                .tabItem { Label("Grid", systemImage: "rectangle.split.3x3") }
-                .tag(Tab.grid)
-            HotkeyTab(store: store)
-                .tabItem { Label("Shortcuts", systemImage: "keyboard") }
-                .tag(Tab.hotkey)
-            PresetsTab(store: store)
-                .tabItem { Label("Sizes", systemImage: "arrow.up.left.and.arrow.down.right") }
-                .tag(Tab.presets)
-            ExclusionTab(store: store)
-                .tabItem { Label("Excluded Apps", systemImage: "app.badge.checkmark") }
-                .tag(Tab.exclusion)
-            AboutTab(store: store)
-                .tabItem { Label("About", systemImage: "info.circle") }
-                .tag(Tab.about)
+        HStack(spacing: 0) {
+            VStack(spacing: 4) {
+                ForEach(Tab.allCases, id: \.self) { tab in
+                    Button { store.tab = tab } label: {
+                        Label(tab.title, systemImage: tab.icon)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 10).padding(.vertical, 9)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(store.tab == tab ? Color.accentColor.opacity(0.16) : .clear,
+                                in: RoundedRectangle(cornerRadius: 7))
+                    .accessibilityAddTraits(store.tab == tab ? .isSelected : [])
+                }
+                Spacer()
+            }
+            .padding(10)
+            .frame(width: 170)
+            Divider()
+            Group {
+                switch store.tab {
+                case .general: GeneralTab(store: store)
+                case .grid: GridTab(store: store)
+                case .hotkey: HotkeyTab(store: store)
+                case .presets: PresetsTab(store: store)
+                case .exclusion: ExclusionTab(store: store)
+                case .about: AboutTab(store: store)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: Self.width, height: 520)
-    }
-
-    /// 창 폭. 스크린샷 촬영 모드에서만 `-OMGScreenshotWidth`로 넓혀 탭 접힘을 막는다.
-    private static var width: CGFloat {
-        let w = UserDefaults.standard.double(forKey: "OMGScreenshotWidth")
-        return w > 0 ? CGFloat(w) : 560
+        .frame(minWidth: 680, idealWidth: 760, minHeight: 500, idealHeight: 560)
     }
 }
 
@@ -75,7 +102,7 @@ private struct GeneralTab: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Accessibility")
                         (store.permissionGranted
-                             ? Text("Granted — windows can be moved.")
+                             ? Text("Granted — try a snap to check window access.")
                              : Text("Not granted — windows can’t be moved."))
                             .settingsCaption()
                     }
@@ -124,7 +151,7 @@ private struct GridTab: View {
                 LabeledContent {
                     HStack {
                         Slider(value: $store.outerMargin, in: 0...48, step: 1)
-                        Text("\(Int(store.outerMargin)) px").monospacedDigit().frame(width: 44, alignment: .trailing)
+                        Text("\(Int(store.outerMargin)) pt").monospacedDigit().frame(width: 44, alignment: .trailing)
                     }
                 } label: {
                     Text("Screen edges")
@@ -132,12 +159,12 @@ private struct GridTab: View {
                 LabeledContent {
                     HStack {
                         Slider(value: $store.innerGap, in: 0...32, step: 1)
-                        Text("\(Int(store.innerGap)) px").monospacedDigit().frame(width: 44, alignment: .trailing)
+                        Text("\(Int(store.innerGap)) pt").monospacedDigit().frame(width: 44, alignment: .trailing)
                     }
                 } label: {
                     Text("Between windows")
                 }
-                Text("The edge gap applies only to sides touching the screen edge; the window gap applies to all sides. Edge and keyboard snapping use the same values.")
+                Text("Screen edges use the edge gap. Adjacent windows share the window gap. Gaps shrink automatically when a cell is too small.")
                     .settingsCaption()
             }
         }
@@ -201,15 +228,13 @@ private struct GridPreview: View {
     /// (`GridSessionController.applyGaps`와 같은 규칙)
     private func selectionRect(c0: Int, r0: Int, selCols: Int, selRows: Int,
                                cw: CGFloat, ch: CGFloat, scale: CGFloat) -> CGRect {
-        var sel = CGRect(x: cw * CGFloat(c0), y: ch * CGFloat(r0),
-                         width: cw * CGFloat(selCols), height: ch * CGFloat(selRows))
-        let m = outerMargin * scale, g = innerGap * scale
-        sel = sel.insetBy(dx: g, dy: g)
-        if c0 == 0 { sel.origin.x += m; sel.size.width -= m }
-        if c0 + selCols == columns { sel.size.width -= m }
-        if r0 == 0 { sel.origin.y += m; sel.size.height -= m }
-        if r0 + selRows == rows { sel.size.height -= m }
-        return sel
+        let screen = CGRect(x: 0, y: 0, width: cw * CGFloat(columns) / scale,
+                            height: ch * CGFloat(rows) / scale)
+        let rect = CGRect(x: cw * CGFloat(c0) / scale, y: ch * CGFloat(r0) / scale,
+                          width: cw * CGFloat(selCols) / scale, height: ch * CGFloat(selRows) / scale)
+        let result = ScreenGeometry.applyGaps(rect, within: screen, outerMargin: outerMargin, innerGap: innerGap)
+        return CGRect(x: result.minX * scale, y: result.minY * scale,
+                      width: result.width * scale, height: result.height * scale)
     }
 }
 
@@ -224,7 +249,7 @@ private struct HotkeyTab: View {
                 HStack {
                     Text("Press while dragging a window")
                     Spacer()
-                    ShortcutRecorder(hotkey: $store.hotkey, error: $store.hotkeyError)
+                    ShortcutRecorder(hotkey: Binding(get: { store.hotkey }, set: { store.setGridHotkey($0) }), error: $store.hotkeyError)
                         .frame(width: 150, height: 24)
                     Button("Default") { store.resetHotkey() }
                         .disabled(store.hotkey == .default)
@@ -295,6 +320,10 @@ private struct PresetsTab: View {
     var body: some View {
         VStack(spacing: 0) {
             List(selection: $selection) {
+                if store.customPresets.contains(where: { !$0.isValid }) {
+                    Text("Enter a width and height from 1 to 16384 points. Changes are saved when all sizes are valid.")
+                        .foregroundStyle(.red).font(.callout)
+                }
                 ForEach($store.customPresets) { $preset in
                     HStack(spacing: 8) {
                         TextField("Name (optional)", text: $preset.name)
@@ -345,7 +374,7 @@ private struct PresetsTab: View {
                 }
                 .help("Adds the current size of the next window you click")
                 Spacer()
-                Text("Built-in video and App Store sizes are always in the menu.")
+                Text("Built-in video sizes are always in the menu.")
                     .settingsCaption()
             }
             .padding(10)
@@ -458,12 +487,11 @@ private struct AboutTab: View {
                 Text("Version \(SettingsStore.versionString)").foregroundStyle(.secondary).monospacedDigit()
                 Text(Brand.tagline).settingsCaption()
             }
-            #if !MAS
             Button("Check for Updates…") { store.checkForUpdates?() }
-            #endif
             HStack(spacing: 16) {
                 Link("GitHub", destination: URL(string: "https://github.com/Canine89/oh-my-grid")!)
                 Link("Contact", destination: URL(string: "mailto:hgpark@goldenrabbit.co.kr")!)
+                Link("Privacy Policy", destination: URL(string: "https://github.com/Canine89/oh-my-grid/blob/main/PRIVACY.md")!)
                 Link("Changelog", destination: URL(string: "https://github.com/Canine89/oh-my-grid/blob/main/CHANGELOG.md")!)
             }
             .font(.system(size: 12))

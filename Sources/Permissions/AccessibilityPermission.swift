@@ -8,8 +8,6 @@ enum AccessibilityPermission {
 
     /// 이미 허용되었는지 확인 (prompt 없음).
     static var isGranted: Bool {
-        // 스토어 스크린샷 촬영 모드에서만: 허용된 것처럼 표시(ScreenshotMode 참고).
-        if UserDefaults.standard.bool(forKey: "OMGScreenshotPermissionGranted") { return true }
         return AXIsProcessTrusted()
     }
 

@@ -36,7 +36,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
 
         let host = NSHostingView(rootView: LocalizedRoot { OnboardingView(model: model) })
         // 연습 화면에서 그리드로 크기가 바뀌어야 하므로 resizable 이어야 한다(AX 리사이즈 허용).
-        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 480),
+        let win = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 600),
                            styleMask: [.titled, .closable, .miniaturizable, .resizable],
                            backing: .buffered, defer: false)
         win.title = String(localized: "Getting Started with \(Brand.name)")
@@ -118,7 +118,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         guard let model, model.page == .practice, !model.snapSucceeded else { return }
         guard let pid = note.userInfo?["pid"] as? pid_t, pid == getpid() else { return }
         model.snapSucceeded = true
-        // 스냅이 실제로 반영된 뒤(commitPending 지연 0.18s) 원래 크기로 부드럽게 복귀.
+        // A verified placement succeeded; restore the practice window after showing the result.
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) { [weak self] in
             MainActor.assumeIsolated {
                 guard let self, let win = self.window, let frame = self.practiceFrame else { return }
@@ -134,7 +134,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     }
 
     private func finish() {
-        model?.applyFinishChoices()
+        guard model?.applyFinishChoices() == true else { return }
         Settings.shared.onboardingCompleted = true
         window?.close()
     }

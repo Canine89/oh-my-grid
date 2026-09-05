@@ -8,9 +8,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let permissionWatchMaxDuration: TimeInterval = 300
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // 스토어 스크린샷 촬영 모드 — 지정한 창만 띄우고 평소 기동은 생략.
-        if ScreenshotMode.activateIfRequested() { return }
-
         setupMainMenu()
         menuBar = MenuBarController()
         NotificationCenter.default.addObserver(forName: .appLanguageChanged, object: nil, queue: .main) { [weak self] _ in
@@ -49,10 +46,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             startPermissionWatcher()
         }
 
-        #if !MAS
-        // Sparkle 업데이터 기동. MAS 판은 App Store가 업데이트를 맡는다.
+        // Sparkle 자동 업데이트 기동.
         _ = UpdaterController.shared
-        #endif
 
         // 첫 실행(또는 아직 가이드를 끝내지 않음) → 온보딩. 메뉴바 전용 앱이라 이게 없으면
         // 사용자는 앱이 켜졌는지도, 어떻게 쓰는지도 알 수 없다.
@@ -119,7 +114,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let editItem = NSMenuItem()
         mainMenu.addItem(editItem)
         let editMenu = NSMenu(title: String(localized: "Edit"))
-        editMenu.addItem(withTitle: String(localized: "Copy"), action: Selector(("copy:")), keyEquivalent: "c")
+        editMenu.addItem(withTitle: String(localized: "Copy"), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        editMenu.addItem(withTitle: String(localized: "Cut"), action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        editMenu.addItem(withTitle: String(localized: "Paste"), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        editMenu.addItem(withTitle: String(localized: "Select All"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        editMenu.addItem(withTitle: String(localized: "Undo"), action: Selector(("undo:")), keyEquivalent: "z")
         editItem.submenu = editMenu
 
         NSApp.mainMenu = mainMenu

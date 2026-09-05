@@ -41,26 +41,6 @@
         }
       }
     },
-    "1280 × 800  (Retina capture → 2560 × 1600)": {
-      "localizations": {
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1280 × 800  (Retina 캡처 → 2560 × 1600)"
-          }
-        }
-      }
-    },
-    "1440 × 900  (Retina capture → 2880 × 1800)": {
-      "localizations": {
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1440 × 900  (Retina 캡처 → 2880 × 1800)"
-          }
-        }
-      }
-    },
     "About": {
       "localizations": {
         "ko": {
@@ -151,16 +131,6 @@
         }
       }
     },
-    "App Store Screenshots (Mac · 16:10)": {
-      "localizations": {
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "App Store 스크린샷 (Mac · 16:10)"
-          }
-        }
-      }
-    },
     "Applies to the menu bar, settings, and the getting-started guide. English is the default; 한국어 is also available.": {
       "localizations": {
         "ko": {
@@ -217,16 +187,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "오른쪽 아래 1/4"
-          }
-        }
-      }
-    },
-    "Built-in video and App Store sizes are always in the menu.": {
-      "localizations": {
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "영상·App Store 기본 프리셋은 메뉴에 항상 표시됩니다."
           }
         }
       }
@@ -1317,6 +1277,206 @@
           "stringUnit": {
             "state": "translated",
             "value": "⚠️ 로그인 항목 상태를 확인할 수 없습니다."
+          }
+        }
+      }
+    },
+    "Allow Accessibility access in System Settings, then try again.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시스템 설정에서 손쉬운 사용 권한을 허용한 뒤 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "No movable window was found. Choose a normal app window and try again.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이동할 수 있는 창을 찾지 못했습니다. 일반 앱 창을 선택한 뒤 다시 시도해 주세요."
+          }
+        }
+      }
+    },
+    "This size or grid selection is invalid. Check the size and gaps.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "창 크기 또는 그리드 선택이 올바르지 않습니다. 크기와 여백을 확인해 주세요."
+          }
+        }
+      }
+    },
+    "This window does not support moving or resizing.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 창은 이동 또는 크기 변경을 지원하지 않습니다."
+          }
+        }
+      }
+    },
+    "The app limited the window’s size or position. The requested layout could not be applied.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "대상 앱이 창 크기나 위치를 제한하여 요청한 배치를 적용하지 못했습니다."
+          }
+        }
+      }
+    },
+    "Window access failed. Check Accessibility access and try a different window.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "창에 접근하지 못했습니다. 손쉬운 사용 권한을 확인하고 다른 창에서 시도해 주세요."
+          }
+        }
+      }
+    },
+    "Window action cancelled.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "창 작업을 취소했습니다."
+          }
+        }
+      }
+    },
+    "Granted — try a snap to check window access.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "권한이 허용되었습니다. 스냅으로 창 제어를 확인해 보세요."
+          }
+        }
+      }
+    },
+    "Screen edges use the edge gap. Adjacent windows share the window gap. Gaps shrink automatically when a cell is too small.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "화면 끝에는 바깥 여백을, 인접한 창 사이에는 창 간격을 적용합니다. 칸이 작으면 여백을 자동으로 줄입니다."
+          }
+        }
+      }
+    },
+    "Enter a width and height from 1 to 16384 points. Changes are saved when all sizes are valid.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "너비와 높이를 1~16384포인트로 입력해 주세요. 모든 크기가 올바를 때 변경 사항을 저장합니다."
+          }
+        }
+      }
+    },
+    "Record shortcut": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "단축키 기록"
+          }
+        }
+      }
+    },
+    "Privacy Policy": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "개인정보 처리방침"
+          }
+        }
+      }
+    },
+    "Cut": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "오려두기"
+          }
+        }
+      }
+    },
+    "Paste": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "붙여넣기"
+          }
+        }
+      }
+    },
+    "Select All": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모두 선택"
+          }
+        }
+      }
+    },
+    "Undo": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "실행 취소"
+          }
+        }
+      }
+    },
+    "Used to move other apps’ windows and read the gesture while you drag.\nNo screen recording is used.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다른 앱의 창을 옮기고 드래그 제스처를 인식할 때 사용합니다.\n화면 녹화는 사용하지 않습니다."
+          }
+        }
+      }
+    },
+    "If the app is missing, use + to add this app from Applications.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "목록에 없으면 + 버튼으로 응용 프로그램 폴더의 이 앱을 추가해 주세요."
+          }
+        }
+      }
+    },
+    "Couldn’t communicate with this app. It may be busy or window access may be restricted.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "대상 앱과 통신하지 못했습니다. 앱이 응답 중인지, 창 접근이 제한되어 있는지 확인해 주세요."
+          }
+        }
+      }
+    },
+    "Built-in video sizes are always in the menu.": {
+      "localizations": {
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영상용 기본 프리셋은 메뉴에 항상 표시됩니다."
           }
         }
       }

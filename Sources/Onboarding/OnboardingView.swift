@@ -8,20 +8,23 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Group {
-                switch model.page {
-                case .language: LanguagePage(model: model)
-                case .permission: PermissionPage(model: model)
-                case .practice: PracticePage(model: model)
-                case .finish: FinishPage(model: model)
+            ScrollView {
+                Group {
+                    switch model.page {
+                    case .language: LanguagePage(model: model)
+                    case .permission: PermissionPage(model: model)
+                    case .practice: PracticePage(model: model)
+                    case .finish: FinishPage(model: model)
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 36)
+                .padding(.top, 28)
+                .padding(.bottom, 16)
+                .transition(.opacity)
+                .id(model.page)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.horizontal, 36)
-            .padding(.top, 28)
-            .padding(.bottom, 16)
-            .transition(.opacity)
-            .id(model.page)
 
             Divider()
             footer
@@ -243,11 +246,13 @@ private struct PermissionPage: View {
         VStack(spacing: 22) {
             PageHeader(symbol: "lock.shield",
                        title: "Accessibility Permission Needed",
-                       subtitle: "Used to move other apps’ windows and read the gesture while you drag.\nNo screen recording or file access is used.")
+                       subtitle: "Used to move other apps’ windows and read the gesture while you drag.\nNo screen recording is used.")
 
             VStack(alignment: .leading, spacing: 10) {
                 StepRow(number: 1, text: "Open the Accessibility list in System Settings with the button below.")
                 StepRow(number: 2, text: "Turn on the oh-my-grid switch in the list.")
+                Text("If the app is missing, use + to add this app from Applications.")
+                    .font(.callout).foregroundStyle(.secondary)
                 StepRow(number: 3, text: "Come back to this window — it moves on automatically.", done: model.permissionGranted)
             }
             .frame(maxWidth: 400, alignment: .leading)

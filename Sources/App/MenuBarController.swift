@@ -58,15 +58,13 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         addItem(to: menu, title: String(localized: "Settings…"), action: #selector(openPreferences), key: ",")
         addItem(to: menu, title: String(localized: "Getting Started…"), action: #selector(openOnboarding))
 
-        #if !MAS
-        // Sparkle 업데이트 확인. MAS 판은 App Store가 업데이트를 맡는다.
+        // Sparkle 업데이트 확인.
         let updateItem = NSMenuItem(title: String(localized: "Check for Updates…"),
                                     action: #selector(UpdaterController.checkForUpdates(_:)),
                                     keyEquivalent: "")
         updateItem.target = UpdaterController.shared
         menu.addItem(updateItem)
         self.updateItem = updateItem
-        #endif
 
         // 권한 미허용 시에만 보이는 안내 항목.
         let perm = addItem(to: menu, title: String(localized: "Request Accessibility Permission…"), action: #selector(openAccessibility))
@@ -138,12 +136,10 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         // 권한 watcher 타임아웃 이후 뒤늦게 허용된 경우: 메뉴만 열어도 탭을 복구한다(이미 있으면 no-op).
         if granted { _ = MouseEventTap.shared.start() }
         hotkeyHintItem?.title = String(localized: "Trackpad: press \(Settings.shared.gridHotkey.displayString) while dragging")
-        #if !MAS
         let updater = UpdaterController.shared
         updateItem?.title = updater.lastFailure == nil ? String(localized: "Check for Updates…") : String(localized: "Retry Update…")
         updateItem?.isEnabled = updater.lastFailure != nil || updater.canCheckForUpdates
         updateItem?.toolTip = updater.lastFailure?.localizedDescription
-        #endif
     }
 
     @discardableResult

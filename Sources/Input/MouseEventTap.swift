@@ -12,17 +12,19 @@ final class MouseEventTap {
     private var tap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var leftDown = false
-    /// 그리드 모드 토글로 우클릭(down)을 소비했으면 짝이 되는 up도 소비(컨텍스트 메뉴 차단).
-    private var consumedRightDown = false
-    /// 창 크기 고정 클릭(down)을 소비했으면 짝이 되는 up도 소비.
-    private var consumedResizeDown = false
+    private var consumedButtons = ConsumedMouseButtons()
     /// 창 크기 고정 호버 미리보기용. armed일 때만 mouseMoved를 탭 마스크에 넣는다.
     private var tracksMouseMoved = false
 
     /// 앱 시작 시 1회 호출 — 탭 설치. 권한이 없으면 false.
     @discardableResult
     func start() -> Bool {
-        guard tap == nil else { return true }
+        guard AccessibilityPermission.isGranted else { stop(); return false }
+        if let tap, CFMachPortIsValid(tap) {
+            if !CGEvent.tapIsEnabled(tap: tap) { CGEvent.tapEnable(tap: tap, enable: true) }
+            return CGEvent.tapIsEnabled(tap: tap)
+        }
+        removeTap()
         return installTap()
     }
 
@@ -31,7 +33,7 @@ final class MouseEventTap {
         guard tracksMouseMoved != enabled else { return }
         tracksMouseMoved = enabled
         guard tap != nil else { return }
-        stop()
+        removeTap()
         if !installTap() {
             // 마스크 변경 중 권한이 회수되면 탭이 유실된 채 남는다 → 허용 감지 watcher로 복구.
             glog("mouseMoved 마스크 변경 중 탭 재설치 실패 → 권한 watcher 요청")
@@ -75,16 +77,25 @@ final class MouseEventTap {
     }
 
     func stop() {
+        removeTap()
+        leftDown = false
+        consumedButtons = ConsumedMouseButtons()
+    }
+
+    private func removeTap() {
         if let source = runLoopSource {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
         }
-        if let tap { CGEvent.tapEnable(tap: tap, enable: false) }
+        if let tap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+            CFMachPortInvalidate(tap)
+        }
         tap = nil
         runLoopSource = nil
     }
 
     /// 콜백에서 호출 — 이벤트 처리 후 통과(event)/소비(nil) 결정.
-    fileprivate func handle(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+    func handle(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         let pass = Unmanaged.passUnretained(event)
         let session = GridSessionController.shared
 
@@ -95,6 +106,14 @@ final class MouseEventTap {
             return pass
         }
 
+        // Finish consumed button pairs even after the mode ended or the frontmost app changed.
+        if consumedButtons.shouldConsume(type) {
+            if type == .leftMouseUp { leftDown = false }
+            if type == .rightMouseDragged, session.isArmed { session.update(to: event.location) }
+            return nil
+        }
+        if type == .keyDown, ShortcutRecorderView.isRecordingShortcut { return pass }
+
         // 창 크기 고정 모드: 메뉴에서 비율을 고른 직후 — 다음 좌클릭으로 그 창을 리사이즈하고 소비한다.
         // (사용자가 명시적으로 시작한 동작이라 예외 앱 가드보다 먼저 처리한다.)
         let resize = WindowResizeController.shared
@@ -102,10 +121,9 @@ final class MouseEventTap {
             switch type {
             case .leftMouseDown:
                 resize.applyAt(point: event.location)
-                consumedResizeDown = true
+                consumedButtons.recordDown(.left)
                 return nil
             case .leftMouseUp:
-                if consumedResizeDown { consumedResizeDown = false; return nil }
                 return pass
             case .mouseMoved:
                 resize.updateHover(at: event.location)
@@ -130,7 +148,6 @@ final class MouseEventTap {
         if ActiveAppMonitor.shared.isFrontmostExcluded {
             if session.isArmed || session.hasPending { session.cancel() }
             leftDown = false
-            consumedRightDown = false
             return pass
         }
 
@@ -155,21 +172,16 @@ final class MouseEventTap {
             if leftDown {
                 if session.isArmed {
                     session.cancel()
-                    consumedRightDown = true
+                    consumedButtons.recordDown(.right)
                     return nil
                 } else if session.arm(at: event.location) {
-                    consumedRightDown = true
+                    consumedButtons.recordDown(.right)
                     return nil
                 }
             }
             return pass
 
         case .rightMouseUp:
-            // 토글로 소비한 우클릭의 짝 → 컨텍스트 메뉴가 뜨지 않게 함께 소비.
-            if consumedRightDown {
-                consumedRightDown = false
-                return nil
-            }
             return pass
 
         case .leftMouseDragged:
