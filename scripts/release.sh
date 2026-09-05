@@ -184,8 +184,7 @@ SIGN_UPDATE="$DD/SourcePackages/artifacts/sparkle/Sparkle/bin/sign_update"
 # 설치본에서 "improperly signed" 오류가 난다(1.9.1에서 실제 발생).
 GENERATE_KEYS="$(dirname "$SIGN_UPDATE")/generate_keys"
 EXPECTED_PUB="$(/usr/libexec/PlistBuddy -c "Print :SUPublicEDKey" "$APP/Contents/Info.plist")"
-ACCOUNT_ARGS=()
-if [ -n "${OMOG_SPARKLE_ACCOUNT:-}" ]; then ACCOUNT_ARGS=(--account "$OMOG_SPARKLE_ACCOUNT"); fi
+ACCOUNT_ARGS=(--account "${OMOG_SPARKLE_ACCOUNT:-ed25519}")
 ACTUAL_PUB="$("$GENERATE_KEYS" -p "${ACCOUNT_ARGS[@]}" 2>/dev/null || true)"
 if [ "$EXPECTED_PUB" != "$ACTUAL_PUB" ]; then
   echo "✗ Sparkle 서명키 불일치 — 이 키로 서명하면 기존 설치본이 업데이트를 거부합니다."
