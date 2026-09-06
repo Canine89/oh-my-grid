@@ -45,25 +45,70 @@ enum AccessibilityPermission {
     /// 사용자가 메뉴/설정에서 복구할 때: 시스템 prompt를 다시 띄운 뒤 설정 패널을 연다.
     /// 앱이 손쉬운 사용 목록에 안 보이는 경우에도 prompt가 등록을 유도한다.
     @discardableResult
+    @MainActor
     static func requestAndOpenSettings() -> Bool {
-        let granted = request()
+        guard !isOpeningSettings else { return isGranted }
+        let granted = isGranted || request()
         openSystemSettings()
         NotificationCenter.default.post(name: .accessibilityPermissionWatchRequested, object: nil)
         notifyStatusChanged()
         return granted
     }
 
-    /// 시스템 설정의 "손쉬운 사용(접근성)" 패널을 연다.
-    /// Tahoe의 System Settings URL을 먼저 시도하고, 실패 시 레거시 System Preferences URL로 폴백한다.
+    static let settingsBundleID = "com.apple.systempreferences"
+    static let settingsPaneURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
+    @MainActor private static var isOpeningSettings = false
+
+    /// Only dispatch the pane URL if System Settings is its registered handler.
+    /// Otherwise launch the application directly, never the system's “choose an app” dialog.
+    static func resolvedPaneURL(handler: URL?, application: URL) -> URL? {
+        guard handler?.standardizedFileURL == application.standardizedFileURL else { return nil }
+        return settingsPaneURL
+    }
+
+    @MainActor
     static func openSystemSettings() {
-        let candidates = [
-            "x-apple.systemsettings:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility",
-            "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
-        ]
-        for string in candidates {
-            guard let url = URL(string: string) else { continue }
-            if NSWorkspace.shared.open(url) { return }
+        guard !isOpeningSettings else { return }
+        let workspace = NSWorkspace.shared
+        guard let application = workspace.urlForApplication(withBundleIdentifier: settingsBundleID) else {
+            showManualSettingsNotice()
+            return
         }
+        isOpeningSettings = true
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.promptsUserIfNeeded = false
+        configuration.addsToRecentItems = false
+        if let pane = resolvedPaneURL(handler: workspace.urlForApplication(toOpen: settingsPaneURL), application: application) {
+            workspace.open([pane], withApplicationAt: application, configuration: configuration) { _, error in
+                DispatchQueue.main.async {
+                    if error != nil {
+                        openSettingsApplication(application)
+                    } else {
+                        isOpeningSettings = false
+                    }
+                }
+            }
+        } else {
+            openSettingsApplication(application)
+        }
+    }
+
+    @MainActor
+    private static func openSettingsApplication(_ application: URL) {
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.promptsUserIfNeeded = false
+        configuration.addsToRecentItems = false
+        NSWorkspace.shared.openApplication(at: application, configuration: configuration) { _, _ in
+            DispatchQueue.main.async {
+                isOpeningSettings = false
+                showManualSettingsNotice()
+            }
+        }
+    }
+
+    @MainActor
+    private static func showManualSettingsNotice() {
+        PermissionNotice.show(text: String(localized: "Open System Settings → Privacy & Security → Accessibility."))
     }
 
     static func notifyStatusChanged() {

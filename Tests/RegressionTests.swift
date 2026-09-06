@@ -9,6 +9,13 @@ struct RegressionTests {
             checks += 1
             guard condition() else { fatalError("Regression: \(message)") }
         }
+        let settingsApp = URL(fileURLWithPath: "/System/Applications/System Settings.app")
+        expect(AccessibilityPermission.resolvedPaneURL(handler: nil, application: settingsApp) == nil,
+               "unknown URL handler falls back to the application")
+        expect(AccessibilityPermission.resolvedPaneURL(handler: URL(fileURLWithPath: "/Applications/Other.app"), application: settingsApp) == nil,
+               "a different URL handler cannot receive the settings request")
+        expect(AccessibilityPermission.resolvedPaneURL(handler: settingsApp, application: settingsApp) == AccessibilityPermission.settingsPaneURL,
+               "registered Settings handler receives the accessibility pane")
         let bounds = CGRect(x: 0, y: 0, width: 1440, height: 900)
         for origin in [CGPoint.zero, CGPoint(x: -1920, y: -1080)] {
             let screen = CGRect(origin: origin, size: bounds.size)

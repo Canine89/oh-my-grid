@@ -65,7 +65,6 @@ final class WindowResizeController {
         }
         guard AccessibilityPermission.isGranted else {
             PermissionNotice.showDenied()
-            AccessibilityPermission.requestAndOpenSettings()
             return
         }
         pendingSize = size
@@ -80,7 +79,6 @@ final class WindowResizeController {
         cancel()
         guard AccessibilityPermission.isGranted else {
             PermissionNotice.showDenied()
-            AccessibilityPermission.requestAndOpenSettings()
             return
         }
         pendingSize = nil
