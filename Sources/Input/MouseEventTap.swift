@@ -63,7 +63,7 @@ final class MouseEventTap {
             callback: mouseEventTapCallback,
             userInfo: Unmanaged.passUnretained(self).toOpaque()
         ) else {
-            NSLog("MouseEventTap: tapCreate 실패 (접근성 권한 필요)")
+            glog("MouseEventTap: tapCreate failed; trusted=\(AccessibilityPermission.isGranted)")
             return false
         }
 

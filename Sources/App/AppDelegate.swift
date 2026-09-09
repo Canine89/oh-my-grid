@@ -24,6 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             object: nil
         )
 
+        glog("Startup accessibilityTrusted=\(AccessibilityPermission.isGranted), gridEnabled=\(Settings.shared.enabled), keyboardEnabled=\(Settings.shared.keyboardSnapEnabled)")
         // 손쉬운 사용(접근성) 권한 확인 → 이벤트 탭 시작.
         // 권한이 없으면 최초 실행에서만 prompt를 띄우고, 허용되는 즉시 이벤트 탭
         // 설치를 재시도한다. 매 실행마다 prompt를 요청하면 macOS의 TCC 반영이 늦을
@@ -54,6 +55,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if !Settings.shared.onboardingCompleted {
             OnboardingWindowController.shared.show()
         }
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        menuBar?.openPreferences()
+        return true
     }
 
     func applicationWillTerminate(_ notification: Notification) {

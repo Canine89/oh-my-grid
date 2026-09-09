@@ -45,6 +45,71 @@ struct RegressionTests {
         expect(!ScreenGeometry.matches(.null, target: .null), "invalid frames never match")
         expect(ScreenGeometry.rect(for: .top, usable: bounds) == bounds, "top edge maximizes")
 
+        func windowInfo(pid: Int32, layer: Int, alpha: Double = 1) -> [String: Any] {
+            [kCGWindowOwnerPID as String: NSNumber(value: pid),
+             kCGWindowLayer as String: layer, kCGWindowAlpha as String: alpha,
+             kCGWindowBounds as String: bounds.dictionaryRepresentation]
+        }
+        expect(AXWindowController.candidateOwnerPID(in: [windowInfo(pid: 1, layer: 1000), windowInfo(pid: 2, layer: 0)],
+                                                   at: CGPoint(x: 100, y: 100)) == 2,
+               "utility overlays do not shadow normal windows")
+        expect(AXWindowController.candidateOwnerPID(in: [windowInfo(pid: 1, layer: 0, alpha: 0), windowInfo(pid: 2, layer: 0)],
+                                                   at: CGPoint(x: 100, y: 100)) == 2,
+               "transparent windows are ignored")
+        expect(AXWindowController.candidateOwnerPID(in: [windowInfo(pid: 2, layer: 0)],
+                                                   at: CGPoint(x: -100, y: -100)) == nil,
+               "unrelated windows are not selected")
+
+        var attempts = 0
+        var timeouts: [Float] = []
+        let recovered: Result<Int, WindowFailure> = AXReadPolicy.read(request: WindowRequest(), deadline: 10, now: { 0 }) { timeout in
+            attempts += 1; timeouts.append(timeout)
+            return attempts == 1 ? (.cannotComplete, nil) : (.success, 42)
+        }
+        expect((try? recovered.get()) == 42 && attempts == 2, "transient communication failure recovers")
+        expect(timeouts == [0.5, 1.0], "retry uses a longer response timeout")
+        attempts = 0
+        let failed: Result<Int, WindowFailure> = AXReadPolicy.read(request: WindowRequest(), deadline: 10, now: { 0 }) { _ in
+            attempts += 1; return (.cannotComplete, nil)
+        }
+        expect(attempts == 2 && failed == .failure(.unresponsive), "persistent communication failure is bounded")
+        attempts = 0
+        let denied: Result<Int, WindowFailure> = AXReadPolicy.read(request: WindowRequest(), deadline: 10, now: { 0 }) { _ in
+            attempts += 1; return (.apiDisabled, nil)
+        }
+        expect(attempts == 1 && denied == .failure(.permission), "permission errors are not retried")
+        let cancelledRead = WindowRequest(); cancelledRead.cancel()
+        attempts = 0
+        let cancelledReadResult: Result<Int, WindowFailure> = AXReadPolicy.read(request: cancelledRead, deadline: 10, now: { 0 }) { _ in
+            attempts += 1; return (.success, 42)
+        }
+        expect(attempts == 0 && cancelledReadResult == .failure(.cancelled), "cancelled reads never call AX")
+        var clock: TimeInterval = 0
+        attempts = 0
+        let expired: Result<Int, WindowFailure> = AXReadPolicy.read(request: WindowRequest(), deadline: 0.2, now: { clock }) { timeout in
+            expect(timeout <= 0.2, "remaining deadline caps timeout")
+            clock = 0.3; attempts += 1; return (.cannotComplete, nil)
+        }
+        expect(attempts == 1 && expired == .failure(.unresponsive), "expired lookup skips retry")
+        attempts = 0
+        let missing: Result<Int, WindowFailure> = AXReadPolicy.read(request: WindowRequest(), deadline: 10, now: { 0 }) { _ in
+            attempts += 1; return (.noValue, nil)
+        }
+        expect(attempts == 1 && missing == .failure(.noWindow), "missing attributes are not retried")
+        let interruptedRead = WindowRequest()
+        let interrupted: Result<Int, WindowFailure> = AXReadPolicy.read(request: interruptedRead, deadline: 10, now: { 0 }) { _ in
+            interruptedRead.cancel(); return (.success, 42)
+        }
+        expect(interrupted == .failure(.cancelled), "late read success cannot revive a cancelled lookup")
+        let element = AXUIElementCreateApplication(getpid())
+        let candidate = AXWindowController.WindowCandidate(pid: 100, frame: bounds)
+        expect(!AXWindowController.matchesCandidate(WindowSnapshot(element: element, frame: bounds, pid: 200), candidate: candidate),
+               "fallback never selects another application's window")
+        expect(!AXWindowController.matchesCandidate(WindowSnapshot(element: element, frame: bounds.offsetBy(dx: 50, dy: 0), pid: 100), candidate: candidate),
+               "fallback never selects an overlapping but different window")
+        expect(AXWindowController.matchesCandidate(WindowSnapshot(element: element, frame: bounds, pid: 100), candidate: candidate),
+               "fallback identifies the expected window by owner and bounds")
+
         var buttons = ConsumedMouseButtons()
         buttons.recordDown(.left)
         expect(buttons.shouldConsume(.leftMouseDragged), "resize drag consumed after mode ends")

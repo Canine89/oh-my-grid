@@ -162,7 +162,7 @@ final class MenuBarController: NSObject, NSMenuDelegate {
         WindowResizeController.shared.arm(size: preset.size, label: preset.label)
     }
 
-    @objc private func openPreferences() {
+    @objc func openPreferences() {
         if prefs == nil { prefs = PreferencesWindowController() }
         prefs?.showWindow()
     }

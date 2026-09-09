@@ -20,13 +20,16 @@ final class KeyboardSnapController {
             return false
         }
         if event.getIntegerValueField(.keyboardEventAutorepeat) == 0 {
-            DispatchQueue.main.async { self.perform(action) }
+            glog("Keyboard snap recognized: \(action.rawValue)")
+            let pid = NSWorkspace.shared.frontmostApplication?.processIdentifier
+            DispatchQueue.main.async { self.perform(action, applicationPID: pid) }
         }
         return true   // 일치했으면 창을 못 찾아도 소비(다른 앱에 ⌃⌥← 가 흘러가지 않게)
     }
 
     /// 동작 실행(메뉴에서도 호출).
-    func perform(_ action: SnapAction) {
+    func perform(_ action: SnapAction, applicationPID: pid_t? = nil) {
+        glog("Keyboard snap executing: \(action.rawValue)")
         guard AccessibilityPermission.isGranted else {
             PermissionNotice.showDenied()
             return
@@ -36,10 +39,10 @@ final class KeyboardSnapController {
         request = WindowRequest()
         requestGeneration &+= 1
         let generation = requestGeneration
-        AXWindowController.shared.queryWindow(request: request) { [weak self] result in
+        AXWindowController.shared.queryWindow(applicationPID: applicationPID, request: request) { [weak self] result in
             guard let self, self.requestGeneration == generation else { return }
             switch result {
-            case .failure(let error): PermissionNotice.show(text: error.message)
+            case .failure(let error): glog("Keyboard snap failed: \(error)"); PermissionNotice.show(text: error.message)
             case .success(let snapshot): self.place(action, snapshot: snapshot, generation: generation)
             }
         }
@@ -62,7 +65,7 @@ final class KeyboardSnapController {
             switch result {
             case .success(let actual):
                 self.showFlash(rect: actual.frame, action: action, screen: screen, displayBounds: display.bounds)
-            case .failure(let error): PermissionNotice.show(text: error.message)
+            case .failure(let error): glog("Keyboard snap failed: \(error)"); PermissionNotice.show(text: error.message)
             }
         }
     }
