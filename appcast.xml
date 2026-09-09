@@ -6,17 +6,19 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.9.4</title>
-      <pubDate>Sun, 06 Sep 2026 23:58:32 +0000</pubDate>
-      <sparkle:version>26</sparkle:version>
-      <sparkle:shortVersionString>1.9.4</sparkle:shortVersionString>
+      <title>1.9.5</title>
+      <pubDate>Wed, 09 Sep 2026 00:19:06 +0000</pubDate>
+      <sparkle:version>27</sparkle:version>
+      <sparkle:shortVersionString>1.9.5</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.9.4</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.9.5</h2>
 <ul>
-<li>손쉬운 사용 설정을 열 때 “문서를 열 응용 프로그램 선택” 창이 나타나는 문제 수정. 실제 등록된 설정 주소를 사용하고, 주소를 열 수 없으면 시스템 설정 앱을 직접 실행합니다.</li>
-<li>권한이 없는 상태에서 창 크기 기능을 반복 실행해도 시스템 권한 창을 계속 열지 않고 앱 안에서 설정 방법을 안내합니다.</li>
+<li>대상 앱과의 일시적인 통신 실패를 제한적으로 재시도하고, 응답 대기 시간을 조정해 창 조회 실패를 줄였습니다.</li>
+<li>커서 아래 창을 찾는 방식을 개선하고, 조회에 실패하면 같은 앱의 창 목록에서 대상을 확인하도록 보완했습니다. 다른 유틸리티의 오버레이를 잘못 선택하는 경우도 방지합니다.</li>
+<li>창 위치·크기 변경을 단계별로 적용하고 완료 후 위치를 보정해, 크기가 되돌아가거나 정상 동작을 실패로 표시하는 문제를 수정했습니다.</li>
+<li>앱을 다시 열면 설정 창이 표시되며, 문제 확인을 위한 동작 로그를 개선했습니다.</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.9.4/oh-my-grid-1.9.4.zip" type="application/octet-stream" sparkle:edSignature="Ws1nTW+rA/mo8bIgTdn23n28diQAZ8r8eCHIYCvAoae5njtuU9OrTvlClZFMCXrBzyycdV5pT0GUHGJj2r3XBw==" length="5262655" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.9.5/oh-my-grid-1.9.5.zip" type="application/octet-stream" sparkle:edSignature="+92iGH90UKYTvTam+eZoG/qHl3uDe/p2aUpc1YFi8NxlPW9yBh7DVoT7CeW0NI4wgnVCNagYoEzkyow85Mh0AQ==" length="5294172" />
     </item>
   </channel>
 </rss>
