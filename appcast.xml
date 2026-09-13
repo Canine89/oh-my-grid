@@ -6,19 +6,20 @@
     <description>oh-my-grid 업데이트</description>
     <language>ko</language>
     <item>
-      <title>1.9.5</title>
-      <pubDate>Wed, 09 Sep 2026 00:19:06 +0000</pubDate>
-      <sparkle:version>27</sparkle:version>
-      <sparkle:shortVersionString>1.9.5</sparkle:shortVersionString>
+      <title>1.9.6</title>
+      <pubDate>Sun, 13 Sep 2026 04:13:24 +0000</pubDate>
+      <sparkle:version>28</sparkle:version>
+      <sparkle:shortVersionString>1.9.6</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-      <description><![CDATA[<h2>oh-my-grid 1.9.5</h2>
+      <description><![CDATA[<h2>oh-my-grid 1.9.6</h2>
 <ul>
-<li>대상 앱과의 일시적인 통신 실패를 제한적으로 재시도하고, 응답 대기 시간을 조정해 창 조회 실패를 줄였습니다.</li>
-<li>커서 아래 창을 찾는 방식을 개선하고, 조회에 실패하면 같은 앱의 창 목록에서 대상을 확인하도록 보완했습니다. 다른 유틸리티의 오버레이를 잘못 선택하는 경우도 방지합니다.</li>
-<li>창 위치·크기 변경을 단계별로 적용하고 완료 후 위치를 보정해, 크기가 되돌아가거나 정상 동작을 실패로 표시하는 문제를 수정했습니다.</li>
-<li>앱을 다시 열면 설정 창이 표시되며, 문제 확인을 위한 동작 로그를 개선했습니다.</li>
+<li>업데이트 직후 권한 요청을 처리하는 동안 마우스는 움직이지만 화면의 어떤 것도 클릭·입력할 수 없게 되던 문제 수정. 이벤트 탭 콜백은 메인 스레드에서 돌기 때문에 시스템 권한 요청(동기 IPC)이나 탭 재설치가 메인 스레드를 막으면 시스템 입력 전체가 함께 멈췄습니다.</li>
+<li>시스템 권한 요청을 백그라운드에서 수행해 메인 스레드를 막지 않습니다.</li>
+<li>메인 스레드가 0.5초 이상 응답하지 않으면 이벤트 탭을 자동으로 잠시 해제해 입력이 계속 흐르게 하고, 회복되면 다시 켭니다.</li>
+<li>클릭마다 실행되던 권한 조회(IPC)를 캐시 값으로 대체하고, 창 크기 고정 모드 종료 시 탭 재설치를 콜백 밖으로 옮겼습니다.</li>
+<li>권한 허용 직후 탭 설치가 반복 실패하면 재시도 간격을 늘려 권한 처리 중인 시스템을 더 두드리지 않습니다.</li>
 </ul>]]></description>
-      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.9.5/oh-my-grid-1.9.5.zip" type="application/octet-stream" sparkle:edSignature="+92iGH90UKYTvTam+eZoG/qHl3uDe/p2aUpc1YFi8NxlPW9yBh7DVoT7CeW0NI4wgnVCNagYoEzkyow85Mh0AQ==" length="5294172" />
+      <enclosure url="https://github.com/Canine89/oh-my-grid/releases/download/v1.9.6/oh-my-grid-1.9.6.zip" type="application/octet-stream" sparkle:edSignature="kGXoXJr0jlaPiVRx335Q4rY/tCC0ZM6JuJ/hG4ZTZqlicSoP+y2zKCyhO2zyKQwym2UX+Nd3kMlc+fw9VDvvCA==" length="5310942" />
     </item>
   </channel>
 </rss>
