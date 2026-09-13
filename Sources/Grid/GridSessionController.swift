@@ -61,7 +61,8 @@ final class GridSessionController {
     func arm(at point: CGPoint) -> Bool {
         guard !isArmed else { return false }
         guard Settings.shared.enabled else { glog("arm 실패: 그리드 비활성"); return false }
-        guard AccessibilityPermission.isGranted else {
+        // 탭 콜백 경로 — tccd IPC 없이 캐시된 권한 값만 본다(콜백이 막히면 시스템 입력이 멈춘다).
+        guard AccessibilityPermission.lastKnownGranted else {
             glog("arm 실패: 접근성 권한 없음")
             PermissionNotice.showDenied()
             return false
@@ -200,7 +201,8 @@ final class GridSessionController {
         cancel()
         sessionGeneration &+= 1
         clearEdgeDrag()
-        guard Settings.shared.edgeSnapEnabled, AccessibilityPermission.isGranted else { return }
+        // 매 좌클릭마다 불리는 콜백 경로 — IPC 없는 캐시 값만 사용.
+        guard Settings.shared.edgeSnapEnabled, AccessibilityPermission.lastKnownGranted else { return }
         dragStartPoint = point
         needsCandidate = true
     }

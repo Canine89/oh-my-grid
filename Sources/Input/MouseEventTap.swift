@@ -4,6 +4,12 @@ import CoreGraphics
 /// 세션 레벨 CGEventTap으로 마우스 제스처를 관찰·소비한다.
 /// 제스처: **좌버튼 드래그 도중 우버튼 누름 → 그리드 무장**, 셀을 가로질러 끈 뒤 버튼을 놓으면 창이 스냅된다.
 /// 접근성 권한이 있어야 탭이 동작한다.
+///
+/// 탭은 메인 런루프에 붙어 있어 콜백이 메인 스레드에서 돈다. 능동 탭(`.defaultTap`)은 콜백이 돌아올 때까지
+/// WindowServer가 해당 입력을 붙들기 때문에, 메인 스레드가 멈추면(권한 prompt, 모달, 느린 IPC)
+/// 시스템 전체의 클릭·키 입력이 함께 멈춘다. 그래서
+/// 1) 콜백 경로에서는 IPC(권한 조회, 탭 재설치)를 하지 않고
+/// 2) `TapStallGuard`가 백그라운드에서 메인 스레드를 감시해 멈추면 탭을 즉시 끄고, 회복되면 다시 켠다.
 @MainActor
 final class MouseEventTap {
     static let shared = MouseEventTap()
@@ -15,24 +21,36 @@ final class MouseEventTap {
     private var consumedButtons = ConsumedMouseButtons()
     /// 창 크기 고정 호버 미리보기용. armed일 때만 mouseMoved를 탭 마스크에 넣는다.
     private var tracksMouseMoved = false
+    private var reinstallScheduled = false
+    private let stallGuard = TapStallGuard()
 
     /// 앱 시작 시 1회 호출 — 탭 설치. 권한이 없으면 false.
     @discardableResult
     func start() -> Bool {
         guard AccessibilityPermission.isGranted else { stop(); return false }
         if let tap, CFMachPortIsValid(tap) {
-            if !CGEvent.tapIsEnabled(tap: tap) { CGEvent.tapEnable(tap: tap, enable: true) }
-            return CGEvent.tapIsEnabled(tap: tap)
+            if !stallGuard.isSuspended, !CGEvent.tapIsEnabled(tap: tap) { CGEvent.tapEnable(tap: tap, enable: true) }
+            return stallGuard.isSuspended || CGEvent.tapIsEnabled(tap: tap)
         }
         removeTap()
         return installTap()
     }
 
     /// 창 크기 고정 호버가 필요할 때만 mouseMoved를 구독해 평상시 콜백 부담을 줄인다.
+    /// 재설치는 다음 런루프 턴으로 미룬다 — 탭 콜백 안에서 자기 자신을 무효화·재생성(WindowServer 왕복)하지 않도록.
     func setTracksMouseMoved(_ enabled: Bool) {
         guard tracksMouseMoved != enabled else { return }
         tracksMouseMoved = enabled
-        guard tap != nil else { return }
+        guard tap != nil, !reinstallScheduled else { return }
+        reinstallScheduled = true
+        DispatchQueue.main.async {
+            MainActor.assumeIsolated { self.reinstallTap() }
+        }
+    }
+
+    private func reinstallTap() {
+        reinstallScheduled = false
+        guard tap != nil else { return }   // 그 사이 stop() 됐으면 설치하지 않는다.
         removeTap()
         if !installTap() {
             // 마스크 변경 중 권한이 회수되면 탭이 유실된 채 남는다 → 허용 감지 watcher로 복구.
@@ -72,6 +90,9 @@ final class MouseEventTap {
         CGEvent.tapEnable(tap: machPort, enable: true)
         tap = machPort
         runLoopSource = source
+        stallGuard.start(tap: machPort) { [weak self] in
+            MainActor.assumeIsolated { self?.recoverFromStall() }
+        }
         glog("이벤트 탭 생성 성공 (isTrusted=\(AccessibilityPermission.isGranted), enabled=\(Settings.shared.enabled), mouseMoved=\(tracksMouseMoved))")
         return true
     }
@@ -83,6 +104,7 @@ final class MouseEventTap {
     }
 
     private func removeTap() {
+        stallGuard.stop()
         if let source = runLoopSource {
             CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
         }
@@ -94,15 +116,25 @@ final class MouseEventTap {
         runLoopSource = nil
     }
 
+    /// 메인 스레드 정지로 탭이 잠시 꺼졌다가 회복된 뒤. 그 사이 놓친 버튼 up 때문에 다음 클릭을
+    /// 잘못 소비하지 않도록 버튼 상태를 초기화하고 진행 중이던 세션은 정리한다.
+    private func recoverFromStall() {
+        leftDown = false
+        consumedButtons = ConsumedMouseButtons()
+        let session = GridSessionController.shared
+        if session.isArmed || session.hasPending { session.cancel() }
+    }
+
     /// 콜백에서 호출 — 이벤트 처리 후 통과(event)/소비(nil) 결정.
     func handle(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
         let pass = Unmanaged.passUnretained(event)
         let session = GridSessionController.shared
 
         // OS가 부하/타임아웃으로 탭을 끈 경우는 예외 앱 여부와 무관하게 항상 재활성.
+        // (정지 감시가 꺼 둔 상태면 감시가 회복 시점에 다시 켠다.)
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             glog("탭 비활성화 감지(\(type.rawValue)) → 재활성")
-            if let tap { CGEvent.tapEnable(tap: tap, enable: true) }
+            if let tap, !stallGuard.isSuspended { CGEvent.tapEnable(tap: tap, enable: true) }
             return pass
         }
 
@@ -248,5 +280,94 @@ private func mouseEventTapCallback(proxy: CGEventTapProxy,
     let tap = Unmanaged<MouseEventTap>.fromOpaque(userInfo).takeUnretainedValue()
     return MainActor.assumeIsolated {
         tap.handle(type: type, event: event)
+    }
+}
+
+/// 메인 스레드 정지 감시. 백그라운드 타이머가 메인 큐에 ping을 보내고, 응답이 `stallThreshold` 안에
+/// 오지 않으면 백그라운드 스레드에서 탭을 끈다(WindowServer가 우리 응답을 기다리며 입력을 붙들지 않게).
+/// 메인 스레드가 다시 ping에 응답하면 탭을 켜고 `onRecover`로 상태 정리를 맡긴다.
+/// 모든 상태는 `lock`으로 보호되며, 탭 포트는 `start`/`stop` 사이에서만 유효하다.
+private final class TapStallGuard: @unchecked Sendable {
+    private let lock = NSLock()
+    private let queue = DispatchQueue(label: "com.goldenrabbit.ohmygrid.tap-stall-guard", qos: .userInteractive)
+    private var timer: DispatchSourceTimer?
+    private var tap: CFMachPort?
+    private var pingSentAt: TimeInterval?
+    private var suspended = false
+    private var generation = 0
+    private var onRecover: (() -> Void)?
+
+    private let pingInterval: TimeInterval = 0.25
+    private let stallThreshold: TimeInterval = 0.5
+
+    var isSuspended: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return suspended
+    }
+
+    func start(tap: CFMachPort, onRecover: @escaping () -> Void) {
+        stop()
+        lock.lock()
+        self.tap = tap
+        self.onRecover = onRecover
+        pingSentAt = nil
+        suspended = false
+        generation &+= 1
+        let generation = self.generation
+        lock.unlock()
+
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now() + pingInterval, repeating: pingInterval, leeway: .milliseconds(50))
+        timer.setEventHandler { [weak self] in self?.tick(generation: generation) }
+        timer.resume()
+        lock.lock()
+        self.timer = timer
+        lock.unlock()
+    }
+
+    func stop() {
+        lock.lock()
+        timer?.cancel()
+        timer = nil
+        tap = nil
+        onRecover = nil
+        pingSentAt = nil
+        suspended = false
+        generation &+= 1
+        lock.unlock()
+    }
+
+    private func tick(generation: Int) {
+        let now = ProcessInfo.processInfo.systemUptime
+        lock.lock()
+        guard self.generation == generation, let tap else { lock.unlock(); return }
+        if let sentAt = pingSentAt {
+            // 이전 ping이 아직 응답되지 않았다 → 메인 스레드가 멈춰 있다.
+            if !suspended, now - sentAt >= stallThreshold {
+                suspended = true
+                CGEvent.tapEnable(tap: tap, enable: false)
+                lock.unlock()
+                glog("메인 스레드 정지 감지(\(Int((now - sentAt) * 1000))ms) → 이벤트 탭 임시 해제")
+                return
+            }
+            lock.unlock()
+            return
+        }
+        pingSentAt = now
+        lock.unlock()
+        DispatchQueue.main.async { [weak self] in self?.pong(generation: generation) }
+    }
+
+    private func pong(generation: Int) {
+        lock.lock()
+        guard self.generation == generation else { lock.unlock(); return }
+        pingSentAt = nil
+        guard suspended, let tap else { lock.unlock(); return }
+        suspended = false
+        CGEvent.tapEnable(tap: tap, enable: true)
+        let recover = onRecover
+        lock.unlock()
+        glog("메인 스레드 회복 → 이벤트 탭 재활성")
+        recover?()
     }
 }

@@ -16,6 +16,9 @@ struct RegressionTests {
                "a different URL handler cannot receive the settings request")
         expect(AccessibilityPermission.resolvedPaneURL(handler: settingsApp, application: settingsApp) == AccessibilityPermission.settingsPaneURL,
                "registered Settings handler receives the accessibility pane")
+        // Input callbacks must never block on tccd; the cached value has to mirror the last live check.
+        let liveGranted = AccessibilityPermission.isGranted
+        expect(AccessibilityPermission.lastKnownGranted == liveGranted, "cached permission mirrors the live check")
         let bounds = CGRect(x: 0, y: 0, width: 1440, height: 900)
         for origin in [CGPoint.zero, CGPoint(x: -1920, y: -1080)] {
             let screen = CGRect(origin: origin, size: bounds.size)

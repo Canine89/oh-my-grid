@@ -79,6 +79,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func startPermissionWatcher() {
         permissionTimer?.invalidate()
         permissionWatchDeadline = Date().addingTimeInterval(permissionWatchMaxDuration)
+        // 탭 설치 시도(tapCreate)는 WindowServer→tccd 권한 검사를 유발한다. 업데이트 직후처럼
+        // tccd가 새 번들의 서명을 검증하느라 느린 동안 매초 두드리면 권한 처리 자체를 더 늦추므로
+        // 실패가 반복되면 간격을 늘린다(1s → 2s → 4s → 8s, 최대 8s).
+        var installBackoffTicks = 1
+        var ticksUntilInstall = 0
         let timer = Timer(timeInterval: 1.0, repeats: true) { [weak self] timer in
             MainActor.assumeIsolated {
                 guard let self else {
@@ -92,13 +97,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     self.permissionWatchDeadline = nil
                     return
                 }
-                guard AccessibilityPermission.isGranted else { return }
+                guard AccessibilityPermission.isGranted else {
+                    installBackoffTicks = 1
+                    ticksUntilInstall = 0
+                    return
+                }
+                guard ticksUntilInstall <= 0 else {
+                    ticksUntilInstall -= 1
+                    return
+                }
                 if MouseEventTap.shared.start() {
                     glog("손쉬운 사용 권한 허용 감지 → 이벤트 탭 시작")
                     timer.invalidate()
                     self.permissionTimer = nil
                     self.permissionWatchDeadline = nil
                     AccessibilityPermission.notifyStatusChanged()
+                } else {
+                    installBackoffTicks = min(installBackoffTicks * 2, 8)
+                    ticksUntilInstall = installBackoffTicks - 1
                 }
             }
         }
